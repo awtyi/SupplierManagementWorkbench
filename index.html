@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>供应商管理看板</title>
+  <link rel="stylesheet" href="styles/base.css">
+  <link rel="stylesheet" href="styles/dashboard.css">
+  <link rel="stylesheet" href="styles/components.css">
+  <link rel="stylesheet" href="styles/responsive.css">
+</head>
+<body>
+  <svg class="icon-sprite" aria-hidden="true">
+    <symbol id="icon-building" viewBox="0 0 24 24">
+      <path d="M4 21V5l8-3v19M4 9h8M4 13h8M4 17h8M12 7h8v14M16 11h1M16 15h1M16 19h1"/>
+    </symbol>
+    <symbol id="icon-alert" viewBox="0 0 24 24">
+      <path d="M12 3 2.8 20h18.4L12 3Zm0 6v5m0 3v.1"/>
+    </symbol>
+    <symbol id="icon-task" viewBox="0 0 24 24">
+      <path d="M9 5h11M9 12h11M9 19h11M4 5l1 1 2-2M4 12l1 1 2-2M4 19l1 1 2-2"/>
+    </symbol>
+    <symbol id="icon-chart" viewBox="0 0 24 24">
+      <path d="M4 20V10m6 10V4m6 16v-7m4 7H2"/>
+    </symbol>
+    <symbol id="icon-close" viewBox="0 0 24 24">
+      <path d="m6 6 12 12M18 6 6 18"/>
+    </symbol>
+  </svg>
+
+  <main class="dashboard-shell">
+    <header class="page-header">
+      <div>
+        <p class="page-kicker">供应商管理</p>
+        <h1>供应商管理看板</h1>
+        <p id="scope-description" class="scope-description"></p>
+      </div>
+      <div class="view-switcher" role="group" aria-label="看板视角">
+        <button type="button" data-view="management" aria-pressed="true">管理视角</button>
+        <button type="button" data-view="operations" aria-pressed="false">我的工作台</button>
+      </div>
+    </header>
+
+    <section id="app" aria-live="polite"></section>
+    <aside id="detail-drawer" class="detail-drawer" aria-hidden="true"></aside>
+    <div id="toast-region" class="toast-region" aria-live="polite"></div>
+  </main>
+
+  <script src="scripts/namespace.js"></script>
+  <script src="scripts/data/mock-data.js"></script>
+  <script src="scripts/domain/metrics.js"></script>
+  <script src="scripts/domain/selectors.js"></script>
+  <script src="scripts/state/store.js"></script>
+  <script src="scripts/charts/svg-charts.js"></script>
+  <script src="scripts/components/primitives.js"></script>
+  <script src="scripts/components/risk-widget.js"></script>
+  <script src="scripts/components/performance-widgets.js"></script>
+  <script src="scripts/components/supplier-widgets.js"></script>
+  <script src="scripts/components/workflow-widgets.js"></script>
+  <script src="scripts/components/detail-drawer.js"></script>
+  <script src="scripts/views/management-view.js"></script>
+  <script src="scripts/views/operations-view.js"></script>
+  <script src="scripts/app.js"></script>
+</body>
+</html>
