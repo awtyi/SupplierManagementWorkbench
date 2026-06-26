@@ -6,3 +6,5 @@ coverage/
 .superpowers/
 node_modules/
 npm-debug.log*
+*.png
+*.md
