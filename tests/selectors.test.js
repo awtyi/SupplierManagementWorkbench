@@ -181,3 +181,24 @@ test("attention selectors only surface suppliers needing action within scope", (
   );
   assert.equal(attention[0].id, "S005");
 });
+
+test("category performance returns a friendly empty state when suppliers have no assessments", () => {
+  const { window } = loadApp(files);
+  const { data, metrics, selectors } = window.SupplierDashboard;
+  const suppliers = metrics.getSupplierScope(data, "management");
+  const result = selectors.performanceByCategory(
+    { ...data, assessments: [] },
+    suppliers,
+    "CAT-STEEL"
+  );
+
+  assert.equal(result.hasAssessments, false);
+  assert.equal(result.supplierCount > 0, true);
+  assert.deepEqual(normalize(result.ranking), []);
+  assert.deepEqual(normalize(result.trend), []);
+  assert.deepEqual(normalize(result.kpiAverages), []);
+  assert.equal(
+    result.gradeDistribution.every((item) => item.value === 0),
+    true
+  );
+});

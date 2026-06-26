@@ -19,6 +19,7 @@
     const assessments = data.assessments.filter(
       (item) => supplierIds.has(item.supplierId) && item.categoryId === categoryId
     );
+    const categorySuppliers = suppliers.filter((item) => item.categoryIds.includes(categoryId));
     const suppliersById = supplierMap(suppliers);
     const latestBySupplier = new Map();
 
@@ -30,6 +31,24 @@
     }
 
     const latest = Array.from(latestBySupplier.values());
+    if (!latest.length) {
+      return {
+        categoryId,
+        categoryName: category.name,
+        supplierCount: categorySuppliers.length,
+        hasAssessments: false,
+        gradeDistribution: config.grades.map((grade) => ({
+          id: grade.id,
+          label: grade.label,
+          color: grade.color,
+          value: 0
+        })),
+        ranking: [],
+        trend: [],
+        kpiAverages: [],
+        decliningSuppliers: []
+      };
+    }
     const ranking = latest
       .map((item) => ({
         supplierId: item.supplierId,
@@ -101,6 +120,8 @@
     return {
       categoryId,
       categoryName: category.name,
+      supplierCount: categorySuppliers.length,
+      hasAssessments: true,
       gradeDistribution,
       ranking,
       trend,

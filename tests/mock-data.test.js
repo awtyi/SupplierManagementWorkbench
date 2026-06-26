@@ -14,10 +14,10 @@ test("mock data has deterministic role scopes and valid references", () => {
   const categoryIds = new Set(data.categories.map((item) => item.id));
 
   assert.equal(data.currentUserId, "U100");
-  assert.equal(data.suppliers.length, 12);
+  assert.equal(data.suppliers.length, 25);
   assert.equal(
     data.suppliers.filter((item) => item.ownerId === data.currentUserId).length,
-    5
+    7
   );
 
   for (const risk of data.risks) {
@@ -31,10 +31,16 @@ test("mock data has deterministic role scopes and valid references", () => {
   for (const supplier of data.suppliers) {
     for (const categoryId of supplier.categoryIds) {
       assert.ok(
-        ["high", "low"].includes(supplier.categoryAttractiveness[categoryId])
+        ["高共同利益", "采购方有利", "供应商有利", "双方低利益"].includes(
+          supplier.categoryAttractiveness[categoryId]
+        )
       );
     }
   }
+  assert.deepEqual(
+    [...new Set(data.categories.map((item) => item.strategicImportance))].sort(),
+    ["关键", "常规", "杠杆", "瓶颈"].sort()
+  );
 });
 
 test("category-specific grade and KPI configuration exists for every category", () => {

@@ -6,29 +6,43 @@
   const organizations = [
     { id: "ORG-WH", name: "武汉制造工厂" },
     { id: "ORG-EAST", name: "华东采购中心" },
-    { id: "ORG-SOUTH", name: "华南采购中心" }
+    { id: "ORG-SOUTH", name: "华南采购中心" },
+    { id: "ORG-NORTH", name: "华北采购中心" }
   ];
 
   const categories = [
-    { id: "CAT-OFFICE", name: "常规办公用品", strategicImportance: "low" },
-    { id: "CAT-STEEL", name: "钢结构件", strategicImportance: "high" },
-    { id: "CAT-IT", name: "信息化设备", strategicImportance: "low" },
-    { id: "CAT-LOGISTICS", name: "物流运输服务", strategicImportance: "high" }
+    { id: "CAT-OFFICE", name: "常规办公用品", strategicImportance: "常规" },
+    { id: "CAT-STEEL", name: "钢结构件", strategicImportance: "关键" },
+    { id: "CAT-IT", name: "信息化设备", strategicImportance: "瓶颈" },
+    { id: "CAT-LOGISTICS", name: "物流运输服务", strategicImportance: "杠杆" }
   ];
 
   const suppliers = [
-    ["S001", "百隆五金结构件有限公司", "ORG-WH", "U100", ["CAT-STEEL"], "优秀", "优选", "注册完成", "供应商申请", false, "2026-11-18", { "CAT-STEEL": "high" }],
-    ["S002", "武汉佰思杰科技有限公司", "ORG-WH", "U100", ["CAT-IT"], "推荐", "有价值", "注册完成", "平台供应商", false, "2026-07-12", { "CAT-IT": "high" }],
-    ["S003", "广西智促科技有限公司", "ORG-SOUTH", "U100", ["CAT-OFFICE", "CAT-IT"], "合格", "需改善", "注册完成", "供应商申请", false, "2026-07-05", { "CAT-OFFICE": "high", "CAT-IT": "low" }],
-    ["S004", "湖北曦翔建设工程有限公司", "ORG-WH", "U100", ["CAT-STEEL"], "潜在", "需改善", "注册中", "供应商申请", false, "2026-06-29", { "CAT-STEEL": "low" }],
-    ["S005", "江南模塑科技有限公司", "ORG-EAST", "U100", ["CAT-STEEL"], "淘汰", "可剔除", "注册完成", "内部供应商", true, "2026-08-20", { "CAT-STEEL": "low" }],
-    ["S006", "江南造船厂", "ORG-EAST", "U200", ["CAT-STEEL", "CAT-LOGISTICS"], "优秀", "优选", "注册完成", "平台供应商", false, "2027-01-12", { "CAT-STEEL": "high", "CAT-LOGISTICS": "high" }],
-    ["S007", "中原工业设备有限公司", "ORG-WH", "U200", ["CAT-IT"], "注册", "有价值", "注册完成", "供应商申请", false, "2026-09-10", { "CAT-IT": "high" }],
-    ["S008", "海川物流服务有限公司", "ORG-SOUTH", "U201", ["CAT-LOGISTICS"], "合格", "有价值", "注册完成", "平台供应商", false, "2026-12-31", { "CAT-LOGISTICS": "high" }],
-    ["S009", "华新办公集采有限公司", "ORG-EAST", "U201", ["CAT-OFFICE"], "推荐", "优选", "注册完成", "供应商申请", false, "2027-02-14", { "CAT-OFFICE": "low" }],
-    ["S010", "东湖数字技术有限公司", "ORG-WH", "U202", ["CAT-IT"], "新的", "有价值", "待邀请", "供应商申请", false, "2026-10-08", { "CAT-IT": "low" }],
-    ["S011", "南岭工程材料有限公司", "ORG-SOUTH", "U202", ["CAT-STEEL"], "合格", "需改善", "注册完成", "内部供应商", true, "2026-07-02", { "CAT-STEEL": "low" }],
-    ["S012", "长江智能装备有限公司", "ORG-WH", "U202", ["CAT-IT", "CAT-LOGISTICS"], "潜在", "有价值", "已失效", "平台供应商", false, "2026-06-24", { "CAT-IT": "low", "CAT-LOGISTICS": "low" }]
+    ["S001", "百隆五金结构件有限公司", "ORG-WH", "U100", ["CAT-STEEL"], "优秀", "优选", "注册完成", "供应商申请", false, "2026-11-18", { "CAT-STEEL": "高共同利益" }],
+    ["S002", "武汉佰思杰科技有限公司", "ORG-WH", "U100", ["CAT-IT"], "推荐", "有价值", "注册完成", "平台供应商", false, "2026-07-12", { "CAT-IT": "采购方有利" }],
+    ["S003", "广西智促科技有限公司", "ORG-SOUTH", "U100", ["CAT-OFFICE", "CAT-IT"], "合格", "需改善", "注册完成", "供应商申请", false, "2026-07-05", { "CAT-OFFICE": "供应商有利", "CAT-IT": "供应商有利" }],
+    ["S004", "湖北曦翔建设工程有限公司", "ORG-WH", "U100", ["CAT-STEEL"], "潜在", "需改善", "注册中", "供应商申请", false, "2026-06-29", { "CAT-STEEL": "供应商有利" }],
+    ["S005", "江南模塑科技有限公司", "ORG-EAST", "U100", ["CAT-STEEL"], "淘汰", "可剔除", "注册完成", "内部供应商", true, "2026-08-20", { "CAT-STEEL": "双方低利益" }],
+    ["S006", "江南造船厂", "ORG-EAST", "U200", ["CAT-STEEL", "CAT-LOGISTICS"], "优秀", "优选", "注册完成", "平台供应商", false, "2027-01-12", { "CAT-STEEL": "采购方有利", "CAT-LOGISTICS": "高共同利益" }],
+    ["S007", "中原工业设备有限公司", "ORG-WH", "U200", ["CAT-IT"], "注册", "有价值", "注册完成", "供应商申请", false, "2026-09-10", { "CAT-IT": "高共同利益" }],
+    ["S008", "海川物流服务有限公司", "ORG-SOUTH", "U201", ["CAT-LOGISTICS"], "合格", "有价值", "注册完成", "平台供应商", false, "2026-12-31", { "CAT-LOGISTICS": "采购方有利" }],
+    ["S009", "华新办公集采有限公司", "ORG-EAST", "U201", ["CAT-OFFICE"], "推荐", "优选", "注册完成", "供应商申请", false, "2027-02-14", { "CAT-OFFICE": "高共同利益" }],
+    ["S010", "东湖数字技术有限公司", "ORG-WH", "U202", ["CAT-IT"], "新的", "有价值", "待邀请", "供应商申请", false, "2026-10-08", { "CAT-IT": "双方低利益" }],
+    ["S011", "南岭工程材料有限公司", "ORG-SOUTH", "U202", ["CAT-STEEL"], "合格", "需改善", "注册完成", "内部供应商", true, "2026-07-02", { "CAT-STEEL": "供应商有利" }],
+    ["S012", "长江智能装备有限公司", "ORG-WH", "U202", ["CAT-IT", "CAT-LOGISTICS"], "潜在", "有价值", "已失效", "平台供应商", false, "2026-06-24", { "CAT-IT": "双方低利益", "CAT-LOGISTICS": "供应商有利" }],
+    ["S013", "华中标准件有限公司", "ORG-WH", "U203", ["CAT-STEEL"], "合格", "有价值", "注册完成", "平台供应商", false, "2027-03-01", { "CAT-STEEL": "采购方有利" }],
+    ["S014", "江夏包装材料有限公司", "ORG-WH", "U204", ["CAT-OFFICE"], "注册", "有价值", "注册完成", "供应商申请", false, "2027-04-16", { "CAT-OFFICE": "高共同利益" }],
+    ["S015", "博远信息服务有限公司", "ORG-WH", "U100", ["CAT-IT"], "推荐", "优选", "注册完成", "平台供应商", false, "2026-12-08", { "CAT-IT": "供应商有利" }],
+    ["S016", "东南仓配服务有限公司", "ORG-EAST", "U203", ["CAT-LOGISTICS"], "合格", "有价值", "注册完成", "平台供应商", false, "2027-05-10", { "CAT-LOGISTICS": "双方低利益" }],
+    ["S017", "苏州精密制造有限公司", "ORG-EAST", "U204", ["CAT-STEEL"], "优秀", "优选", "注册完成", "内部供应商", false, "2027-06-06", { "CAT-STEEL": "高共同利益" }],
+    ["S018", "上海云帆科技有限公司", "ORG-EAST", "U200", ["CAT-IT"], "合格", "有价值", "注册完成", "平台供应商", false, "2027-01-30", { "CAT-IT": "采购方有利" }],
+    ["S019", "宁波办公服务有限公司", "ORG-EAST", "U201", ["CAT-OFFICE"], "注册", "有价值", "注册完成", "供应商申请", false, "2027-08-12", { "CAT-OFFICE": "双方低利益" }],
+    ["S020", "华南优速物流有限公司", "ORG-SOUTH", "U205", ["CAT-LOGISTICS"], "优秀", "优选", "注册完成", "平台供应商", false, "2027-07-18", { "CAT-LOGISTICS": "高共同利益" }],
+    ["S021", "佛山五金配套有限公司", "ORG-SOUTH", "U206", ["CAT-STEEL"], "合格", "有价值", "注册完成", "供应商申请", false, "2027-03-24", { "CAT-STEEL": "采购方有利" }],
+    ["S022", "深圳数字集成有限公司", "ORG-SOUTH", "U100", ["CAT-IT", "CAT-OFFICE"], "推荐", "优选", "注册完成", "平台供应商", false, "2027-09-09", { "CAT-IT": "高共同利益", "CAT-OFFICE": "采购方有利" }],
+    ["S023", "燕山工业材料有限公司", "ORG-NORTH", "U207", ["CAT-STEEL"], "合格", "有价值", "注册完成", "供应商申请", false, "2027-04-02", { "CAT-STEEL": "采购方有利" }],
+    ["S024", "津门智慧物流有限公司", "ORG-NORTH", "U208", ["CAT-LOGISTICS"], "推荐", "优选", "注册完成", "平台供应商", false, "2027-05-22", { "CAT-LOGISTICS": "高共同利益" }],
+    ["S025", "北方云科设备有限公司", "ORG-NORTH", "U209", ["CAT-IT"], "注册", "有价值", "注册完成", "平台供应商", false, "2027-01-18", { "CAT-IT": "供应商有利" }]
   ].map((row) => ({
     id: row[0],
     name: row[1],
@@ -107,7 +121,18 @@
     assessment("A016", "S009", "CAT-OFFICE", "2026-Q2", 94, [95, 93, 94]),
     assessment("A017", "S006", "CAT-LOGISTICS", "2026-Q2", 87, [88, 89, 84, 87]),
     assessment("A018", "S008", "CAT-LOGISTICS", "2026-Q2", 91, [94, 90, 89, 91]),
-    assessment("A019", "S012", "CAT-LOGISTICS", "2026-Q2", 70, [72, 68, 69, 71])
+    assessment("A019", "S012", "CAT-LOGISTICS", "2026-Q2", 70, [72, 68, 69, 71]),
+    assessment("A020", "S013", "CAT-STEEL", "2026-Q2", 84, [86, 82, 83, 85]),
+    assessment("A021", "S015", "CAT-IT", "2026-Q2", 90, [92, 89, 88, 91]),
+    assessment("A022", "S017", "CAT-STEEL", "2026-Q2", 94, [96, 93, 91, 95]),
+    assessment("A023", "S018", "CAT-IT", "2026-Q2", 82, [84, 80, 81, 83]),
+    assessment("A024", "S020", "CAT-LOGISTICS", "2026-Q2", 93, [95, 92, 91, 94]),
+    assessment("A025", "S021", "CAT-STEEL", "2026-Q2", 86, [88, 85, 84, 87]),
+    assessment("A026", "S022", "CAT-IT", "2026-Q2", 88, [90, 87, 86, 89]),
+    assessment("A027", "S022", "CAT-OFFICE", "2026-Q2", 91, [93, 90, 91]),
+    assessment("A028", "S023", "CAT-STEEL", "2026-Q2", 82, [84, 81, 80, 83]),
+    assessment("A029", "S024", "CAT-LOGISTICS", "2026-Q2", 89, [91, 88, 87, 90]),
+    assessment("A030", "S025", "CAT-IT", "2026-Q2", 85, [87, 84, 83, 86])
   ];
 
   const performanceTasks = [
@@ -126,7 +151,19 @@
     ["PT13", "S011", "CAT-STEEL", "periodic", "completed", "2026-06-20"],
     ["PT14", "S012", "CAT-IT", "periodic", "overdue", "2026-06-12"],
     ["PT15", "S012", "CAT-LOGISTICS", "periodic", "completed", "2026-06-20"],
-    ["PT16", "S004", "CAT-STEEL", "one-off", "in_progress", "2026-06-28"]
+    ["PT16", "S004", "CAT-STEEL", "one-off", "in_progress", "2026-06-28"],
+    ["PT17", "S013", "CAT-STEEL", "periodic", "completed", "2026-06-22"],
+    ["PT18", "S014", "CAT-OFFICE", "one-off", "in_progress", "2026-07-04"],
+    ["PT19", "S015", "CAT-IT", "periodic", "completed", "2026-06-23"],
+    ["PT20", "S017", "CAT-STEEL", "periodic", "completed", "2026-06-24"],
+    ["PT21", "S018", "CAT-IT", "periodic", "completed", "2026-06-24"],
+    ["PT22", "S020", "CAT-LOGISTICS", "periodic", "completed", "2026-06-24"],
+    ["PT23", "S021", "CAT-STEEL", "periodic", "completed", "2026-06-24"],
+    ["PT24", "S022", "CAT-IT", "periodic", "completed", "2026-06-24"],
+    ["PT25", "S022", "CAT-OFFICE", "one-off", "completed", "2026-06-24"],
+    ["PT26", "S023", "CAT-STEEL", "periodic", "completed", "2026-06-24"],
+    ["PT27", "S024", "CAT-LOGISTICS", "periodic", "completed", "2026-06-24"],
+    ["PT28", "S025", "CAT-IT", "periodic", "completed", "2026-06-24"]
   ].map((row) => ({
     id: row[0],
     supplierId: row[1],
@@ -142,7 +179,19 @@
     ["R03", "S005", "compliance", "high", "open", "黑名单关联风险", "2026-06-22", 5, 4],
     ["R04", "S011", "quality", "medium", "open", "来料质量波动", "2026-06-20", 3, 2],
     ["R05", "S012", "certificate", "medium", "open", "注册与证照已失效", "2026-06-19", 2, 2],
-    ["R06", "S002", "service", "low", "closed", "服务响应时长偏高", "2026-06-10", 1, 2]
+    ["R06", "S002", "service", "low", "closed", "服务响应时长偏高", "2026-06-10", 1, 2],
+    ["R07", "S001", "quality", "medium", "open", "抽检批次偏差", "2026-06-25", 3, 2],
+    ["R08", "S002", "service", "low", "open", "服务响应偏慢", "2026-06-25", 2, 1],
+    ["R09", "S003", "delivery", "medium", "open", "交付计划频繁调整", "2026-06-24", 2, 3],
+    ["R10", "S004", "certificate", "high", "open", "资质材料即将到期", "2026-06-23", 4, 2],
+    ["R11", "S005", "compliance", "high", "open", "合规整改超期", "2026-06-22", 4, 4],
+    ["R12", "S006", "capacity", "medium", "open", "旺季产能不足", "2026-06-21", 3, 3],
+    ["R13", "S007", "service", "low", "open", "技术支持响应不稳定", "2026-06-20", 2, 2],
+    ["R14", "S008", "delivery", "medium", "open", "运输异常率上升", "2026-06-19", 3, 2],
+    ["R15", "S009", "price", "low", "open", "报价波动偏高", "2026-06-18", 2, 1],
+    ["R16", "S010", "registration", "medium", "open", "邀请确认长时间未响应", "2026-06-17", 2, 3],
+    ["R17", "S011", "quality", "high", "open", "关键质量问题复发", "2026-06-16", 4, 3],
+    ["R18", "S012", "certificate", "high", "open", "证照更新未完成", "2026-06-15", 3, 4]
   ].map((row) => ({
     id: row[0],
     supplierId: row[1],
@@ -186,7 +235,7 @@
   ns.data = {
     today: "2026-06-25",
     currentUserId: "U100",
-    managementOrgIds: ["ORG-WH", "ORG-EAST", "ORG-SOUTH"],
+    managementOrgIds: ["ORG-WH", "ORG-EAST", "ORG-SOUTH", "ORG-NORTH"],
     organizations,
     categories,
     suppliers,
