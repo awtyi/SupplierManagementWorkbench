@@ -1,6 +1,8 @@
-.worktrees/
-.superpowers/
 .DS_Store
 Thumbs.db
 *.log
 coverage/
+.worktrees/
+.superpowers/
+node_modules/
+npm-debug.log*

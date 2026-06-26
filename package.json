@@ -1,0 +1,12 @@
+{
+  "name": "supplier-management-dashboard-demo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "verify:static": "powershell -ExecutionPolicy Bypass -File scripts-dev/verify-static-app.ps1"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
