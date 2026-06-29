@@ -40,15 +40,16 @@
         };
       })
       .filter((item) => item.value);
-    const max = Math.max(1, ...byOrg.map((item) => item.value));
     return panel(
       "采购组织分布",
       "总量底条、注册完成进度与风险供应商标记",
       `<div class="org-bullet-list">${byOrg
         .map((item) => {
-          const totalWidth = Math.max(8, Math.round((item.value / max) * 100));
-          const registeredWidth = Math.round((item.registered / item.value) * totalWidth);
-          const riskOffset = Math.min(100, Math.max(7, Math.round((item.risk / max) * 100)));
+          const totalWidth = 100;
+          const registeredWidth = item.registered
+            ? Math.max(8, Math.round((item.registered / item.value) * 100))
+            : 0;
+          const riskOffset = Math.min(100, Math.max(7, Math.round((item.risk / item.value) * 100)));
           return `<div class="org-bullet">
             <div class="org-bullet-head">
               <strong>${escapeHtml(item.label)}</strong>
@@ -56,19 +57,21 @@
             </div>
             <div class="org-bullet-track">
               <i class="org-bullet-total" style="--w:${totalWidth}%"></i>
-              <i class="org-bullet-registered" style="--w:${registeredWidth}%"></i>
+              <i class="org-bullet-registered" style="--w:${registeredWidth}%">
+                ${item.registered ? `<span>${item.registered}</span>` : ""}
+              </i>
               ${item.risk ? `<b class="org-bullet-risk" style="--x:${riskOffset}%">${item.risk}</b>` : ""}
             </div>
             <div class="org-bullet-meta">
-              <span>注册完成 ${item.registered}</span>
+              <span>注册完成 ${item.registered}/${item.value}</span>
               <span>风险供应商 ${item.risk}</span>
             </div>
           </div>`;
         })
         .join("")}</div>
       <div class="chart-legend compact-legend">
-        <span style="color:#2f7df6"><i class="legend-dot"></i>供应商总量</span>
-        <span style="color:#20b26b"><i class="legend-dot"></i>注册完成</span>
+        <span style="color:#2f7df6"><i class="legend-dot"></i>组织供应商总量</span>
+        <span style="color:#20b26b"><i class="legend-dot"></i>注册完成率</span>
         <span style="color:#f05b57"><i class="legend-dot"></i>风险供应商</span>
       </div>`
     );
@@ -76,37 +79,10 @@
 
   function sourceRegistrationWidget(suppliers) {
     const source = countItems(suppliers, "source");
-    const reg = countItems(suppliers, "registrationStatus");
-    function compactDonutGroup(title, items) {
-      return `<div class="source-status-chart-card">
-          <h3 class="mini-title">${escapeHtml(title)}</h3>
-          ${ns.charts.donutChart(items, {
-            height: 142,
-            size: 146,
-            radius: 49,
-            strokeWidth: 16,
-            valueSize: 24,
-            hideLegend: true
-          })}
-        </div>
-        <div class="source-status-legend-card">${items
-          .map(
-            (item) => `<span style="color:${item.color}">
-              <i class="legend-dot"></i>
-              <em>${escapeHtml(item.label)}</em>
-              <strong>${item.value}</strong>
-            </span>`
-          )
-          .join("")}</div>
-      `;
-    }
     return panel(
-      "来源与注册状态",
-      "供应商来源和注册生命周期使用双饼图并列观察",
-      `<div class="dual-donut compact-source-status">
-        ${compactDonutGroup("供应商来源", source)}
-        ${compactDonutGroup("注册状态", reg)}
-      </div>`
+      "供应商来源",
+      "仅展示供应商申请与内部供应商来源分布",
+      ns.charts.donutChart(source)
     );
   }
 
@@ -143,6 +119,34 @@
     合作: { letter: "C", className: "coop", tone: "green" },
     战略: { letter: "S", className: "strategic", tone: "red" }
   };
+  const segmentVisual = {
+    优选: {
+      className: "prime",
+      tone: "green",
+      summary: "长期合作关系",
+      actions: ["优先进入核心供应资源池", "签订长期框架协议", "联合规划产能与成本优化"]
+    },
+    有价值: {
+      className: "value",
+      tone: "orange",
+      summary: "优选来源与协同发展",
+      actions: ["作为优选供应商来源", "推进物流、交付和质量协同", "观察是否具备升级为优选的条件"]
+    },
+    需改善: {
+      className: "improve",
+      tone: "orange",
+      summary: "推进持续改善",
+      actions: ["制定阶段性改善计划", "明确质量、交付或成本改善目标", "到期复评后决定保留或降级"]
+    },
+    可剔除: {
+      className: "circulation",
+      tone: "blue",
+      summary: "限期改善或退出",
+      actions: ["签订改善协议并跟踪达成情况", "减少新增合作与关键订单依赖", "一定时间内不达标则纳入剔除候选"]
+    }
+  };
+  const fixedGradeOrder = ["D", "C", "B", "A"];
+  const relationOrder = ["一般", "合作", "战略"];
 
   function relationshipType(category, supplier) {
     const importance = category.strategicImportance;
@@ -154,6 +158,151 @@
       type,
       ...relationshipVisual[type]
     };
+  }
+
+  function fixedPerformanceGrade(score) {
+    if (score >= 90) {
+      return "A";
+    }
+    if (score >= 80) {
+      return "B";
+    }
+    if (score >= 70) {
+      return "C";
+    }
+    return "D";
+  }
+
+  function strategySegment(relationType, grade) {
+    if (relationType === "战略") {
+      return grade === "A" ? "优选" : grade === "B" ? "有价值" : "需改善";
+    }
+    if (relationType === "合作") {
+      return grade === "A" ? "优选" : grade === "B" ? "有价值" : grade === "C" ? "需改善" : "可剔除";
+    }
+    return ["A", "B"].includes(grade) ? "有价值" : "可剔除";
+  }
+
+  function latestAssessmentBySupplier(data, suppliers, categoryId) {
+    const supplierIds = new Set(suppliers.map((item) => item.id));
+    return data.assessments
+      .filter((item) => supplierIds.has(item.supplierId) && item.categoryId === categoryId)
+      .reduce((accumulator, item) => {
+        const current = accumulator[item.supplierId];
+        if (!current || item.period > current.period) {
+          accumulator[item.supplierId] = item;
+        }
+        return accumulator;
+      }, {});
+  }
+
+  function segmentMatrixEntries(data, suppliers, categoryId) {
+    const category = data.categories.find((item) => item.id === categoryId) || data.categories[0];
+    const latestBySupplier = latestAssessmentBySupplier(data, suppliers, category.id);
+    return suppliers
+      .filter((supplier) => supplier.categoryIds.includes(category.id) && latestBySupplier[supplier.id])
+      .map((supplier, index) => {
+        const assessment = latestBySupplier[supplier.id];
+        const grade = fixedPerformanceGrade(assessment.score);
+        const relation = relationshipType(category, supplier);
+        const segment = strategySegment(relation.type, grade);
+        const gradeIndex = fixedGradeOrder.indexOf(grade);
+        const relationIndex = relationOrder.indexOf(relation.type);
+        const jitterX = ((index % 3) - 1) * 2.3;
+        const jitterY = ((Math.floor(index / 3) % 3) - 1) * 2.3;
+        return {
+          supplier,
+          assessment,
+          grade,
+          relation,
+          segment,
+          x: 12.5 + gradeIndex * 25 + jitterX,
+          y: 83.33 - relationIndex * 33.33 + jitterY
+        };
+      });
+  }
+
+  function segmentMatrixWidget(data, suppliers, categoryId, selectedSupplierId) {
+    const selectedCategoryId = data.categories.some((item) => item.id === categoryId)
+      ? categoryId
+      : data.categories[0].id;
+    const entries = segmentMatrixEntries(data, suppliers, selectedCategoryId);
+    const selectedEntry = entries.find((item) => item.supplier.id === selectedSupplierId) || entries[0] || null;
+    const counts = ["优选", "有价值", "需改善", "可剔除"].map((segment) => ({
+      segment,
+      value: entries.filter((item) => item.segment === segment).length,
+      ...segmentVisual[segment]
+    }));
+    const cells = relationOrder
+      .slice()
+      .reverse()
+      .map((relation) =>
+        fixedGradeOrder
+          .map((grade) => {
+            const segment = strategySegment(relation, grade);
+            return `<span class="segment-zone ${segmentVisual[segment].className}">
+              <strong>${escapeHtml(segment)}</strong>
+            </span>`;
+          })
+          .join("")
+      )
+      .join("");
+    const points = entries
+      .map((entry) => `<button class="segment-point ${segmentVisual[entry.segment].className} ${selectedEntry?.supplier.id === entry.supplier.id ? "is-selected" : ""}"
+        style="--x:${entry.x}%;--y:${entry.y}%"
+        title="${escapeHtml(`${entry.supplier.name} · ${entry.grade} · ${entry.relation.type} · ${entry.segment}`)}"
+        data-segment-supplier="${escapeHtml(entry.supplier.id)}"
+        type="button">
+        <span>${escapeHtml(entry.supplier.name.slice(0, 1))}</span>
+      </button>`)
+      .join("");
+    const selectedAdvice = selectedEntry
+      ? segmentVisual[selectedEntry.segment]
+      : null;
+    const advice = selectedEntry
+      ? `<div class="segment-advice-card ${selectedAdvice.className}">
+          <span class="item-meta">已选供应商</span>
+          <strong>${escapeHtml(selectedEntry.supplier.name)}</strong>
+          <p>${escapeHtml(selectedEntry.grade)}等级 · ${escapeHtml(selectedEntry.relation.type)}性关系 · ${escapeHtml(selectedEntry.segment)}</p>
+          <ul>${selectedAdvice.actions.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+        </div>`
+      : `<div class="empty-note">当前品类暂无可落点的供应商</div>`;
+
+    return panel(
+      "供应商区分策略矩阵",
+      "按固定绩效等级 A/B/C/D 与企业-供应商关系细分定位供应商区分",
+      `<div class="segment-strategy-layout">
+        <div class="segment-matrix-shell">
+          <div class="segment-axis-title vertical">关系细分（SRS）</div>
+          <div class="segment-matrix">
+            <div class="segment-zone-grid">${cells}</div>
+            <div class="segment-points">${points}</div>
+          </div>
+          <div class="segment-axis-title horizontal">供应商评价结果（SE）</div>
+          <div class="segment-y-labels">
+            <span>战略性</span>
+            <span>合作性</span>
+            <span>一般性</span>
+          </div>
+          <div class="segment-x-labels">
+            ${fixedGradeOrder.map((grade) => `<span>${grade}等级</span>`).join("")}
+          </div>
+        </div>
+        <aside class="segment-side">
+          <div class="segment-counts">
+            ${counts
+              .map((item) => `<div class="segment-count-card ${item.className}">
+                ${tag(item.segment, item.tone)}
+                <strong>${item.value}</strong>
+                <span>${escapeHtml(item.summary)}</span>
+              </div>`)
+              .join("")}
+          </div>
+          ${advice}
+        </aside>
+      </div>`,
+      categorySelect("set-management-segment-category", data.categories, selectedCategoryId, false)
+    );
   }
 
   function relationshipEntries(data, suppliers, selectedCategoryId) {
@@ -277,6 +426,7 @@
     distributionPanel,
     orgDistributionWidget,
     sourceRegistrationWidget,
+    segmentMatrixWidget,
     relationshipMatrixWidget,
     attentionTable
   });

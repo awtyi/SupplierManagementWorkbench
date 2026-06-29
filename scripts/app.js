@@ -41,6 +41,12 @@
         return;
       }
 
+      const segmentPoint = event.target.closest("[data-segment-supplier]");
+      if (segmentPoint) {
+        ns.store.setState({ managementSegmentSupplierId: segmentPoint.getAttribute("data-segment-supplier") });
+        return;
+      }
+
       const supplierButton = event.target.closest("[data-open-supplier]");
       if (supplierButton) {
         ns.drawer.renderSupplierDetail(data, supplierButton.getAttribute("data-open-supplier"));
@@ -64,6 +70,12 @@
       if (action === "set-management-attention-category") {
         ns.store.setState({ managementAttentionCategoryId: target.value });
       }
+      if (action === "set-management-risk-method") {
+        ns.store.setState({ managementRiskMethod: target.value });
+      }
+      if (action === "set-management-segment-category") {
+        ns.store.setState({ managementSegmentCategoryId: target.value, managementSegmentSupplierId: "" });
+      }
       if (action === "set-operations-supplier-attention-category") {
         ns.store.setState({ operationsSupplierAttentionCategoryId: target.value });
       }
@@ -72,6 +84,9 @@
       }
       if (action === "set-operations-performance-overview-category") {
         ns.store.setState({ operationsPerformanceOverviewCategoryId: target.value });
+      }
+      if (action === "set-operations-risk-method") {
+        ns.store.setState({ operationsRiskMethod: target.value });
       }
     });
   }

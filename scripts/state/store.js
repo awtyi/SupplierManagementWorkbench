@@ -7,10 +7,14 @@
     view: "management",
     managementPerformanceCategoryId: "CAT-STEEL",
     managementAttentionCategoryId: "CAT-STEEL",
+    managementRiskMethod: "LS",
+    managementSegmentCategoryId: "CAT-STEEL",
+    managementSegmentSupplierId: "",
     relationshipCategoryId: "all",
     operationsSupplierAttentionCategoryId: "CAT-IT",
     operationsPerformanceAttentionCategoryId: "CAT-IT",
-    operationsPerformanceOverviewCategoryId: "CAT-IT"
+    operationsPerformanceOverviewCategoryId: "CAT-IT",
+    operationsRiskMethod: "LS"
   };
 
   const listeners = new Set();

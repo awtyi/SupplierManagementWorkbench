@@ -21,14 +21,20 @@
       <section class="section-grid grid-6">${cards}</section>
 
       <section class="section-grid grid-3">
-        <div class="span-2">${ns.widgets.riskWidget(data, suppliers, { visibleRows: 4 })}</div>
+        <div class="span-2">${ns.widgets.riskWidget(data, suppliers, {
+          visibleRows: 4,
+          method: state.managementRiskMethod,
+          methodAction: "set-management-risk-method"
+        })}</div>
         <div>${ns.widgets.orgDistributionWidget(data, suppliers)}</div>
       </section>
 
+      <section class="section-grid grid-1">
+        <div>${ns.widgets.segmentMatrixWidget(data, suppliers, state.managementSegmentCategoryId, state.managementSegmentSupplierId)}</div>
+      </section>
+
       <section class="section-grid grid-3">
-        <div>${ns.widgets.distributionPanel("供应商区分分布", "可剔除/需改善/有价值/优选", suppliers, "segment")}</div>
         <div>${ns.widgets.distributionPanel("供应商级别分布", "新的/注册/推荐/潜在/优秀/合格/淘汰", suppliers, "level")}</div>
-        <div>${ns.widgets.taskProgressWidget(data, suppliers, "组织绩效任务进度")}</div>
       </section>
 
       <section class="section-grid grid-3">

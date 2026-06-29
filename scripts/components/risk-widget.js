@@ -9,52 +9,165 @@
   const riskLabel = { high: "高", medium: "中", low: "低" };
   const riskColor = { high: "#f05b57", medium: "#f59f22", low: "#20b26b" };
   const riskWeight = { high: 3, medium: 2, low: 1 };
+  const exposureByType = {
+    compliance: 6,
+    certificate: 6,
+    quality: 3,
+    delivery: 3,
+    capacity: 3,
+    performance: 2,
+    registration: 2,
+    service: 2,
+    price: 2
+  };
 
-  function riskWidget(data, suppliers, options = {}) {
-    const visibleRows = options.visibleRows || 4;
-    const supplierIds = new Set(suppliers.map((item) => item.id));
-    const supplierById = Object.fromEntries(suppliers.map((item) => [item.id, item]));
-    const openRisks = data.risks
-      .filter((item) => supplierIds.has(item.supplierId) && item.status === "open")
-      .sort((a, b) => b.lsScore - a.lsScore);
-    const levelItems = [
-      { label: "高风险", value: openRisks.filter((item) => item.level === "high").length, color: riskColor.high },
-      { label: "中风险", value: openRisks.filter((item) => item.level === "medium").length, color: riskColor.medium },
-      { label: "低风险", value: openRisks.filter((item) => item.level === "low").length, color: riskColor.low }
+  function lsScore(risk) {
+    return risk.likelihood * risk.severity;
+  }
+
+  function lsLevel(score) {
+    if (score >= 12) {
+      return "high";
+    }
+    if (score >= 6) {
+      return "medium";
+    }
+    return "low";
+  }
+
+  function exposureScore(risk) {
+    return risk.exposure || exposureByType[risk.type] || 1;
+  }
+
+  function consequenceScore(risk) {
+    return risk.consequence || risk.severity * 3;
+  }
+
+  function lecScore(risk) {
+    return risk.likelihood * exposureScore(risk) * consequenceScore(risk);
+  }
+
+  function lecLevel(score) {
+    if (score >= 120) {
+      return "high";
+    }
+    if (score >= 45) {
+      return "medium";
+    }
+    return "low";
+  }
+
+  function scoreRisk(risk, method) {
+    const score = method === "LEC" ? lecScore(risk) : lsScore(risk);
+    return {
+      ...risk,
+      score,
+      displayLevel: method === "LEC" ? lecLevel(score) : lsLevel(score),
+      exposure: exposureScore(risk),
+      consequence: consequenceScore(risk)
+    };
+  }
+
+  function levelRows(risks) {
+    return [
+      { label: "高风险", value: risks.filter((item) => item.displayLevel === "high").length, color: riskColor.high },
+      { label: "中风险", value: risks.filter((item) => item.displayLevel === "medium").length, color: riskColor.medium },
+      { label: "低风险", value: risks.filter((item) => item.displayLevel === "low").length, color: riskColor.low }
     ];
-    const matrix = [5, 4, 3, 2, 1]
+  }
+
+  function renderLsMatrix(risks) {
+    const cells = [5, 4, 3, 2, 1]
       .map((severity) =>
         [1, 2, 3, 4, 5]
           .map((likelihood) => {
-            const cellRisks = openRisks.filter(
+            const cellRisks = risks.filter(
               (item) => item.severity === severity && item.likelihood === likelihood
             );
-            const count = cellRisks.length;
-            const score = severity * likelihood;
-            const highestLevel = cellRisks
-              .map((item) => item.level)
-              .sort((left, right) => riskWeight[right] - riskWeight[left])[0];
-            const color = highestLevel
-              ? riskColor[highestLevel]
-              : score >= 12
-                ? riskColor.high
-                : score >= 6
-                  ? riskColor.medium
-                  : riskColor.low;
-            return `<rect x="${(likelihood - 1) * 32}" y="${(5 - severity) * 26}" width="28" height="22" rx="4" fill="${color}" opacity="${count ? 0.95 : 0.16}"></rect>
-              ${count ? `<text x="${(likelihood - 1) * 32 + 14}" y="${(5 - severity) * 26 + 15}" text-anchor="middle" fill="#fff" font-size="11" font-weight="800">${count}</text>` : ""}`;
+            const level = cellRisks.length
+              ? cellRisks
+                  .map((item) => item.displayLevel)
+                  .sort((left, right) => riskWeight[right] - riskWeight[left])[0]
+              : lsLevel(likelihood * severity);
+            const title = `L${likelihood} × S${severity}：${cellRisks.length}条`;
+            return `<span class="risk-matrix-cell ${level} ${cellRisks.length ? "has-data" : ""}" title="${escapeHtml(title)}">
+              ${cellRisks.length ? `<strong>${cellRisks.length}</strong>` : ""}
+            </span>`;
           })
           .join("")
       )
       .join("");
+
+    return `<div class="risk-analysis-card">
+      <div class="risk-analysis-head">
+        <h3 class="mini-title">LS风险矩阵</h3>
+        <span>格内数字为未关闭风险数量</span>
+      </div>
+      <div class="risk-matrix-wrap">
+        <span class="risk-axis-y">严重度 S：高 ↑</span>
+        <div class="risk-matrix-grid">${cells}</div>
+        <span class="risk-axis-x">可能性 L：低 → 高</span>
+      </div>
+    </div>`;
+  }
+
+  function renderLecSummary(risks) {
+    const maxRisk = risks[0];
+    const scoreBands = [
+      { label: "重大 120+", value: risks.filter((item) => item.score >= 120).length, color: riskColor.high },
+      { label: "关注 45-119", value: risks.filter((item) => item.score >= 45 && item.score < 120).length, color: riskColor.medium },
+      { label: "观察 20-44", value: risks.filter((item) => item.score >= 20 && item.score < 45).length, color: "#16a6a0" },
+      { label: "低位 <20", value: risks.filter((item) => item.score < 20).length, color: riskColor.low }
+    ];
+    const factorCards = maxRisk
+      ? [
+          { label: "最高LEC", value: maxRisk.score },
+          { label: "L可能性", value: maxRisk.likelihood },
+          { label: "E暴露", value: maxRisk.exposure },
+          { label: "C后果", value: maxRisk.consequence }
+        ]
+      : [
+          { label: "最高LEC", value: 0 },
+          { label: "L可能性", value: 0 },
+          { label: "E暴露", value: 0 },
+          { label: "C后果", value: 0 }
+        ];
+
+    return `<div class="risk-analysis-card">
+      <div class="risk-analysis-head">
+        <h3 class="mini-title">LEC风险分布</h3>
+        <span>L × E × C 三因子评分</span>
+      </div>
+      <div class="lec-factor-grid">
+        ${factorCards
+          .map((item) => `<span><em>${escapeHtml(item.label)}</em><strong>${item.value}</strong></span>`)
+          .join("")}
+      </div>
+      <h3 class="mini-title risk-subtitle">LEC分值区间</h3>
+      ${ns.charts.progressRows(scoreBands)}
+    </div>`;
+  }
+
+  function riskWidget(data, suppliers, options = {}) {
+    const visibleRows = options.visibleRows || 4;
+    const method = options.method === "LEC" ? "LEC" : "LS";
+    const methodAction = options.methodAction || "noop-risk-method";
+    const supplierIds = new Set(suppliers.map((item) => item.id));
+    const supplierById = Object.fromEntries(suppliers.map((item) => [item.id, item]));
+    const openRisks = data.risks
+      .filter((item) => supplierIds.has(item.supplierId) && item.status === "open")
+      .map((item) => scoreRisk(item, method))
+      .sort((a, b) => b.score - a.score);
+    const levelItems = levelRows(openRisks);
+    const analysis = method === "LEC" ? renderLecSummary(openRisks) : renderLsMatrix(openRisks);
     const recent = openRisks.slice(0, 20);
     const riskRows = recent.map((risk) => {
       const supplier = supplierById[risk.supplierId];
       return `<button class="risk-card" data-open-supplier="${escapeHtml(risk.supplierId)}">
-        <span class="risk-card-level ${riskTone[risk.level]}">${escapeHtml(riskLabel[risk.level])}</span>
+        <span class="risk-card-level ${riskTone[risk.displayLevel]}">${escapeHtml(riskLabel[risk.displayLevel])}</span>
         <span class="risk-card-main">
           <span class="risk-card-title">${escapeHtml(risk.title)}</span>
-          <span class="risk-card-subtitle">${escapeHtml(supplier?.name || risk.supplierId)}</span>
+          <span class="risk-card-subtitle">${escapeHtml(supplier?.name || risk.supplierId)} · ${method} ${risk.score}</span>
         </span>
         <span class="risk-card-side">
           <span>分析中</span>
@@ -78,21 +191,17 @@
 
     return panel(
       "风险预警",
-      "组件内筛选：风险等级 / 风险类型 / 时间范围",
+      "组件内筛选：风险矩阵",
       `<div class="risk-layout">
         <div>
-          <div class="chart-wrap">
-            <svg viewBox="0 0 160 130" width="100%" height="160" role="img">
-              ${matrix}
-            </svg>
-          </div>
+          ${analysis}
           ${ns.charts.progressRows(levelItems)}
         </div>
         ${carousel}
       </div>`,
-      `<select class="toolbar-select" aria-label="风险评价法">
-        <option selected>LS评价法</option>
-        <option>LEC评价法</option>
+      `<select class="toolbar-select" data-action="${escapeHtml(methodAction)}" aria-label="风险评价法">
+        <option value="LS" ${method === "LS" ? "selected" : ""}>LS评价法</option>
+        <option value="LEC" ${method === "LEC" ? "selected" : ""}>LEC评价法</option>
       </select>`
     );
   }
