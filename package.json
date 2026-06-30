@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "test": "node --test tests/*.test.js",
-    "verify:static": "powershell -ExecutionPolicy Bypass -File scripts-dev/verify-static-app.ps1"
+    "verify:static": "powershell -ExecutionPolicy Bypass -File scripts-dev/verify-static-app.ps1",
+    "deploy:gh-pages": "git push origin HEAD:gh-pages"
   },
   "engines": {
     "node": ">=20"
