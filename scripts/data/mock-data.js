@@ -58,41 +58,86 @@
     categoryAttractiveness: row[11]
   }));
 
+  const categoryCertifications = [
+    ["CC001", "S001", "CAT-STEEL", "认证通过", "已认证", "2025-11-20", "2026-11-18", "U100"],
+    ["CC002", "S002", "CAT-IT", "认证通过", "已认证", "2025-12-16", "2026-07-12", "U100"],
+    ["CC003", "S002", "CAT-OFFICE", "认证中", "采购审核", "2026-06-18", "", "U100"],
+    ["CC004", "S003", "CAT-OFFICE", "认证通过", "已认证", "2026-01-08", "2026-07-05", "U100"],
+    ["CC005", "S003", "CAT-IT", "认证通过", "已认证", "2026-01-12", "2026-07-05", "U100"],
+    ["CC006", "S004", "CAT-STEEL", "认证通过", "已认证", "2026-03-21", "2026-06-29", "U100"],
+    ["CC007", "S005", "CAT-STEEL", "已失效", "认证退出", "2025-08-11", "2026-05-31", "U100"],
+    ["CC008", "S006", "CAT-STEEL", "认证通过", "已认证", "2025-10-22", "2027-01-12", "U200"],
+    ["CC009", "S006", "CAT-LOGISTICS", "认证通过", "已认证", "2025-12-02", "2027-01-12", "U200"],
+    ["CC010", "S007", "CAT-IT", "认证通过", "已认证", "2026-02-10", "2026-09-10", "U200"],
+    ["CC011", "S007", "CAT-STEEL", "认证中", "资料复核", "2026-06-17", "", "U200"],
+    ["CC012", "S008", "CAT-LOGISTICS", "认证通过", "已认证", "2026-01-18", "2026-12-31", "U201"],
+    ["CC013", "S009", "CAT-OFFICE", "认证通过", "已认证", "2026-02-24", "2027-02-14", "U201"],
+    ["CC014", "S010", "CAT-IT", "认证中", "供应商提交", "2026-06-12", "", "U202"],
+    ["CC015", "S011", "CAT-STEEL", "认证通过", "已认证", "2025-12-30", "2026-07-02", "U202"],
+    ["CC016", "S012", "CAT-IT", "已失效", "证照更新", "2025-09-18", "2026-06-24", "U202"],
+    ["CC017", "S012", "CAT-LOGISTICS", "认证通过", "已认证", "2026-02-28", "2026-12-24", "U202"],
+    ["CC018", "S013", "CAT-STEEL", "认证通过", "已认证", "2026-03-01", "2027-03-01", "U203"],
+    ["CC019", "S014", "CAT-OFFICE", "认证通过", "已认证", "2026-04-16", "2027-04-16", "U204"],
+    ["CC020", "S015", "CAT-IT", "认证通过", "已认证", "2025-12-08", "2026-12-08", "U100"],
+    ["CC021", "S016", "CAT-LOGISTICS", "认证通过", "已认证", "2026-05-10", "2027-05-10", "U203"],
+    ["CC022", "S017", "CAT-STEEL", "认证通过", "已认证", "2026-06-06", "2027-06-06", "U204"],
+    ["CC023", "S018", "CAT-IT", "认证通过", "已认证", "2026-01-30", "2027-01-30", "U200"],
+    ["CC024", "S019", "CAT-OFFICE", "认证通过", "已认证", "2026-05-12", "2027-08-12", "U201"],
+    ["CC025", "S020", "CAT-LOGISTICS", "认证通过", "已认证", "2026-04-18", "2027-07-18", "U205"],
+    ["CC026", "S021", "CAT-STEEL", "认证通过", "已认证", "2026-03-24", "2027-03-24", "U206"],
+    ["CC027", "S022", "CAT-IT", "认证通过", "已认证", "2026-03-09", "2027-09-09", "U100"],
+    ["CC028", "S022", "CAT-OFFICE", "认证通过", "已认证", "2026-04-09", "2027-09-09", "U100"],
+    ["CC029", "S023", "CAT-STEEL", "认证通过", "已认证", "2026-04-02", "2027-04-02", "U207"],
+    ["CC030", "S024", "CAT-LOGISTICS", "认证通过", "已认证", "2026-05-22", "2027-05-22", "U208"],
+    ["CC031", "S025", "CAT-IT", "认证通过", "已认证", "2026-01-18", "2027-01-18", "U209"],
+    ["CC032", "S011", "CAT-LOGISTICS", "退回整改", "补充运输资质", "2026-06-10", "", "U202"],
+    ["CC033", "S018", "CAT-STEEL", "待提交", "供应商补充材料", "2026-06-21", "", "U200"]
+  ].map((row) => ({
+    id: row[0],
+    supplierId: row[1],
+    categoryId: row[2],
+    status: row[3],
+    node: row[4],
+    submittedAt: row[5],
+    expiresAt: row[6],
+    ownerId: row[7]
+  }));
+
   const performanceConfig = {
     "CAT-OFFICE": {
       grades: [
-        { id: "A", label: "A级", min: 90, color: "#22b573" },
-        { id: "B", label: "B级", min: 80, color: "#2f7df6" },
-        { id: "C", label: "C级", min: 70, color: "#f5a623" },
-        { id: "D", label: "D级", min: 0, color: "#ff5b57" }
+        { id: "A", label: "A级", min: 90, color: "#22b573", builtInGrade: "A" },
+        { id: "B", label: "B级", min: 80, color: "#2f7df6", builtInGrade: "B" },
+        { id: "C", label: "C级", min: 70, color: "#f5a623", builtInGrade: "C" },
+        { id: "D", label: "D级", min: 0, color: "#ff5b57", builtInGrade: "D" }
       ],
       kpis: ["价格竞争力", "交付及时率", "服务响应"]
     },
     "CAT-STEEL": {
       grades: [
-        { id: "A", label: "卓越", min: 92, color: "#22b573" },
-        { id: "B1", label: "良好", min: 85, color: "#2f7df6" },
-        { id: "B2", label: "稳定", min: 75, color: "#68c7c1" },
-        { id: "C", label: "观察", min: 65, color: "#f5a623" },
-        { id: "D", label: "改善", min: 0, color: "#ff5b57" }
+        { id: "A", label: "卓越", min: 92, color: "#22b573", builtInGrade: "A" },
+        { id: "B1", label: "良好", min: 85, color: "#2f7df6", builtInGrade: "B" },
+        { id: "B2", label: "稳定", min: 75, color: "#68c7c1", builtInGrade: "B" },
+        { id: "C", label: "观察", min: 65, color: "#f5a623", builtInGrade: "C" },
+        { id: "D", label: "改善", min: 0, color: "#ff5b57", builtInGrade: "D" }
       ],
       kpis: ["质量评分", "交付评分", "价格评分", "售后评分"]
     },
     "CAT-IT": {
       grades: [
-        { id: "S", label: "S级", min: 95, color: "#7057e8" },
-        { id: "A", label: "A级", min: 88, color: "#22b573" },
-        { id: "B", label: "B级", min: 76, color: "#2f7df6" },
-        { id: "C", label: "C级", min: 0, color: "#f5a623" }
+        { id: "S", label: "S级", min: 95, color: "#7057e8", builtInGrade: "A" },
+        { id: "A", label: "A级", min: 88, color: "#22b573", builtInGrade: "B" },
+        { id: "B", label: "B级", min: 76, color: "#2f7df6", builtInGrade: "C" },
+        { id: "C", label: "C级", min: 0, color: "#f5a623", builtInGrade: "D" }
       ],
       kpis: ["产品能力", "实施质量", "服务保障", "信息安全"]
     },
     "CAT-LOGISTICS": {
       grades: [
-        { id: "A", label: "优选", min: 90, color: "#22b573" },
-        { id: "B", label: "合作", min: 78, color: "#2f7df6" },
-        { id: "C", label: "一般", min: 65, color: "#f5a623" },
-        { id: "D", label: "限制", min: 0, color: "#ff5b57" }
+        { id: "A", label: "优选", min: 90, color: "#22b573", builtInGrade: "A" },
+        { id: "B", label: "合作", min: 78, color: "#2f7df6", builtInGrade: "B" },
+        { id: "C", label: "一般", min: 65, color: "#f5a623", builtInGrade: "C" },
+        { id: "D", label: "限制", min: 0, color: "#ff5b57", builtInGrade: "D" }
       ],
       kpis: ["准时到达率", "货损控制", "响应速度", "异常处理"]
     }
@@ -244,6 +289,7 @@
     performanceTasks,
     risks,
     remediations,
-    workflows
+    workflows,
+    categoryCertifications
   };
 })(window);

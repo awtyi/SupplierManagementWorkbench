@@ -9,6 +9,7 @@
   const riskLabel = { high: "高", medium: "中", low: "低" };
   const riskColor = { high: "#f05b57", medium: "#f59f22", low: "#20b26b" };
   const riskWeight = { high: 3, medium: 2, low: 1 };
+  const riskHeightObservers = [];
   const exposureByType = {
     compliance: 6,
     certificate: 6,
@@ -149,7 +150,7 @@
   }
 
   function riskWidget(data, suppliers, options = {}) {
-    const visibleRows = options.visibleRows || 4;
+    const scrollThreshold = options.visibleRows || 4;
     const method = options.method === "LEC" ? "LEC" : "LS";
     const methodAction = options.methodAction || "noop-risk-method";
     const supplierIds = new Set(suppliers.map((item) => item.id));
@@ -175,9 +176,9 @@
         </span>
       </button>`;
     });
-    const shouldScroll = recent.length > visibleRows;
+    const shouldScroll = recent.length > scrollThreshold;
     const carouselRows = shouldScroll ? [...riskRows, ...riskRows] : riskRows;
-    const carousel = `<div class="risk-carousel" style="--risk-rows:${visibleRows};--risk-duration:${Math.max(
+    const carousel = `<div class="risk-carousel" data-risk-carousel style="--risk-duration:${Math.max(
       18,
       recent.length * 2.2
     )}s">
@@ -193,7 +194,7 @@
       "风险预警",
       "组件内筛选：风险矩阵",
       `<div class="risk-layout">
-        <div>
+        <div class="risk-left" data-risk-left>
           ${analysis}
           ${ns.charts.progressRows(levelItems)}
         </div>
@@ -206,6 +207,41 @@
     );
   }
 
+  function syncRiskCarouselHeights(root = document) {
+    riskHeightObservers.splice(0).forEach((observer) => observer.disconnect());
+    const layouts = [...root.querySelectorAll(".risk-layout")];
+    layouts.forEach((layout) => {
+      const left = layout.querySelector("[data-risk-left]");
+      const carousel = layout.querySelector("[data-risk-carousel]");
+      const title = carousel?.querySelector(".risk-carousel-title");
+      const windowElement = carousel?.querySelector(".risk-carousel-window");
+      if (!left || !carousel || !title || !windowElement) {
+        return;
+      }
+
+      const update = () => {
+        const leftHeight = left.getBoundingClientRect().height;
+        const titleStyle = getComputedStyle(title);
+        const titleHeight =
+          title.getBoundingClientRect().height +
+          parseFloat(titleStyle.marginTop || 0) +
+          parseFloat(titleStyle.marginBottom || 0);
+        const height = Math.max(0, Math.floor(leftHeight - titleHeight));
+        windowElement.style.height = `${height}px`;
+      };
+
+      update();
+      if (!global.ResizeObserver) {
+        return;
+      }
+      const observer = new ResizeObserver(update);
+      observer.observe(left);
+      observer.observe(title);
+      riskHeightObservers.push(observer);
+    });
+  }
+
   ns.widgets = ns.widgets || {};
   ns.widgets.riskWidget = riskWidget;
+  ns.widgets.syncRiskCarouselHeights = syncRiskCarouselHeights;
 })(window);

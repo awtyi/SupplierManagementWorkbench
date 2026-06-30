@@ -5,6 +5,7 @@
   const { escapeHtml } = ns.util;
   const { panel, tag, table, categorySelect } = ns.ui;
 
+  const categoryCertificationHeightObservers = [];
   const palette = ["#2f7df6", "#20b26b", "#f59f22", "#f05b57", "#7457e8", "#16a6a0", "#8c98a8"];
   const remediationStatusText = {
     plan_missing: "未提交整改计划",
@@ -24,6 +25,59 @@
 
   function distributionPanel(title, subtitle, items, key) {
     return panel(title, subtitle, ns.charts.donutChart(countItems(items, key)));
+  }
+
+  function supplierGrowthFunnelWidget(suppliers) {
+    const total = suppliers.length;
+    const registeredSuppliers = suppliers.filter((supplier) => supplier.registrationStatus === "注册完成");
+    const qualifiedSuppliers = registeredSuppliers.filter((supplier) =>
+      ["合格", "优秀"].includes(supplier.level)
+    );
+    const excellentSuppliers = registeredSuppliers.filter((supplier) => supplier.level === "优秀");
+    const denominator = Math.max(total, 1);
+    const levels = [
+      { label: "所有供应商", value: total, color: "#2f7df6" },
+      { label: "注册供应商", value: registeredSuppliers.length, color: "#16a6a0" },
+      { label: "合格供应商", value: qualifiedSuppliers.length, color: "#20b26b" },
+      { label: "优秀供应商", value: excellentSuppliers.length, color: "#7457e8" }
+    ];
+
+    return panel(
+      "供应商成长漏斗",
+      "所有供应商 → 注册供应商 → 合格供应商 → 优秀供应商",
+      `<div class="supplier-growth-funnel">
+        ${levels
+          .map((item, index) => {
+            const width = Math.round((item.value / denominator) * 100);
+            const totalRate = total ? Math.round((item.value / total) * 100) : 0;
+            const previous = levels[index - 1];
+            const parentRate = previous?.value ? `${Math.round((item.value / previous.value) * 100)}%` : "-";
+            const isInsideLabel = item.value > 0 && width >= 16;
+            const isTiny = item.value > 0 && width < 16;
+            const label = `${item.label} ${item.value}`;
+            return `<div class="supplier-growth-row">
+              <div class="supplier-growth-rate">
+                <span>占全部</span>
+                <strong>${totalRate}%</strong>
+              </div>
+              <div class="supplier-growth-main">
+                <div class="supplier-growth-track ${item.value ? "" : "is-empty"}">
+                  <span class="supplier-growth-bar ${isTiny ? "is-tiny" : ""}" style="--w:${width}%;--c:${item.color}">
+                    ${isInsideLabel ? `<span class="supplier-growth-label is-inside">${escapeHtml(item.label)} <strong>${item.value}</strong></span>` : ""}
+                  </span>
+                  ${isTiny ? `<i class="supplier-growth-marker" style="--c:${item.color}"></i>` : ""}
+                  ${isInsideLabel ? "" : `<span class="supplier-growth-label is-outside">${escapeHtml(label)}</span>`}
+                </div>
+              </div>
+              <div class="supplier-growth-rate is-right">
+                <span>占上层</span>
+                <strong>${parentRate}</strong>
+              </div>
+            </div>`;
+          })
+          .join("")}
+      </div>`
+    );
   }
 
   function orgDistributionWidget(data, suppliers) {
@@ -84,6 +138,163 @@
       "仅展示供应商申请与内部供应商来源分布",
       ns.charts.donutChart(source)
     );
+  }
+
+  const certificationStatusTone = {
+    认证通过: "green",
+    认证中: "blue",
+    退回整改: "orange",
+    待提交: "orange",
+    已失效: "red"
+  };
+
+  function addDays(dateText, days) {
+    const date = new Date(`${dateText}T00:00:00`);
+    date.setDate(date.getDate() + days);
+    return date.toISOString().slice(0, 10);
+  }
+
+  function isCertificationExpiring(record, data) {
+    return record.status === "认证通过" &&
+      record.expiresAt &&
+      record.expiresAt >= data.today &&
+      record.expiresAt <= addDays(data.today, 30);
+  }
+
+  function categoryCertificationOverviewWidget(data, suppliers) {
+    const supplierById = Object.fromEntries(suppliers.map((item) => [item.id, item]));
+    const categoryById = Object.fromEntries(data.categories.map((item) => [item.id, item]));
+    const records = (data.categoryCertifications || []).filter((item) => supplierById[item.supplierId]);
+    const passed = records.filter((item) => item.status === "认证通过");
+    const inProgress = records.filter((item) => ["认证中", "待提交"].includes(item.status));
+    const returned = records.filter((item) => item.status === "退回整改");
+    const expiring = records.filter((item) => isCertificationExpiring(item, data));
+    const categoryRows = data.categories.map((category) => {
+      const categoryRecords = records.filter((item) => item.categoryId === category.id);
+      const categoryPassed = categoryRecords.filter((item) => item.status === "认证通过");
+      const categoryProgress = categoryRecords.filter((item) => ["认证中", "待提交"].includes(item.status));
+      const categoryException = categoryRecords.filter((item) =>
+        ["退回整改", "已失效"].includes(item.status) || isCertificationExpiring(item, data)
+      );
+      const width = Math.round((categoryPassed.length / Math.max(1, passed.length)) * 100);
+      return {
+        category,
+        passed: categoryPassed.length,
+        progress: categoryProgress.length,
+        exception: categoryException.length,
+        width: Math.max(categoryPassed.length ? 8 : 0, width)
+      };
+    });
+    const concernRows = records
+      .filter((item) => ["退回整改", "待提交", "已失效"].includes(item.status) || isCertificationExpiring(item, data))
+      .sort((left, right) => {
+        const order = { 退回整改: 0, 已失效: 1, 待提交: 2, 认证通过: 3 };
+        const leftOrder = isCertificationExpiring(left, data) ? 2 : order[left.status] ?? 9;
+        const rightOrder = isCertificationExpiring(right, data) ? 2 : order[right.status] ?? 9;
+        return leftOrder - rightOrder || (left.expiresAt || "9999-12-31").localeCompare(right.expiresAt || "9999-12-31");
+      });
+    const metricItems = [
+      { label: "已认证组合", value: passed.length, tone: "green" },
+      { label: "认证中/待提交", value: inProgress.length, tone: "blue" },
+      { label: "退回整改", value: returned.length, tone: "orange" },
+      { label: "即将到期", value: expiring.length, tone: "red" }
+    ];
+
+    return panel(
+      "品类认证概览",
+      "按供应商-采购品类认证关系展示覆盖、流程状态与异常关注",
+      `<div class="category-cert-overview" data-category-cert-layout>
+        <div class="category-cert-metrics">
+          ${metricItems
+            .map((item) => `<div class="category-cert-metric ${item.tone}">
+              <span>${escapeHtml(item.label)}</span>
+              <strong>${item.value}</strong>
+            </div>`)
+            .join("")}
+        </div>
+        <div class="category-cert-grid">
+          <section class="category-cert-block category-cert-coverage" data-category-cert-left>
+            <h3 class="mini-title">品类覆盖情况</h3>
+            ${categoryRows
+              .map((item) => `<div class="category-cert-row">
+                <div class="category-cert-row-head">
+                  <strong>${escapeHtml(item.category.name)}</strong>
+                  <span>${item.passed} 家已认证</span>
+                </div>
+                <div class="category-cert-progress">
+                  <i style="--w:${item.width}%"></i>
+                </div>
+                <div class="category-cert-row-foot">
+                  <span>认证中 ${item.progress}</span>
+                  <span>需关注 ${item.exception}</span>
+                </div>
+              </div>`)
+              .join("")}
+          </section>
+          <section class="category-cert-block category-cert-concerns">
+            <h3 class="mini-title">认证关注事项</h3>
+            <div class="category-cert-window">
+              <div class="category-cert-track ${concernRows.length > 3 ? "" : "is-static"}" style="--category-cert-duration:${Math.max(16, concernRows.length * 2.4)}s">
+                ${(concernRows.length > 3 ? [...concernRows, ...concernRows] : concernRows)
+                  .map((item) => {
+                    const supplier = supplierById[item.supplierId];
+                    const category = categoryById[item.categoryId];
+                    const label = isCertificationExpiring(item, data) ? "即将到期" : item.status;
+                    const tone = isCertificationExpiring(item, data) ? "red" : certificationStatusTone[item.status] || "gray";
+                    const dateText = item.expiresAt || item.submittedAt;
+                    return `<button class="category-cert-card" type="button" data-open-supplier="${escapeHtml(item.supplierId)}">
+                      <span class="category-cert-main">
+                        <strong>${escapeHtml(supplier.name)}</strong>
+                        <em>${escapeHtml(category.name)} · ${escapeHtml(item.node)}</em>
+                      </span>
+                      <span class="category-cert-side">
+                        ${tag(label, tone)}
+                        <time>${escapeHtml(dateText)}</time>
+                      </span>
+                    </button>`;
+                  })
+                  .join("") || `<div class="empty-note">暂无需要关注的品类认证事项</div>`}
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>`
+    );
+  }
+
+  function syncCategoryCertificationHeights(root = document) {
+    categoryCertificationHeightObservers.splice(0).forEach((observer) => observer.disconnect());
+    const layouts = [...root.querySelectorAll("[data-category-cert-layout]")];
+    layouts.forEach((layout) => {
+      const left = layout.querySelector("[data-category-cert-left]");
+      const concerns = layout.querySelector(".category-cert-concerns");
+      const title = concerns?.querySelector(".mini-title");
+      const windowElement = concerns?.querySelector(".category-cert-window");
+      if (!left || !concerns || !title || !windowElement) {
+        return;
+      }
+
+      const update = () => {
+        windowElement.style.height = "";
+        const leftHeight = left.getBoundingClientRect().height;
+        const titleStyle = getComputedStyle(title);
+        const titleHeight =
+          title.getBoundingClientRect().height +
+          parseFloat(titleStyle.marginTop || 0) +
+          parseFloat(titleStyle.marginBottom || 0);
+        const height = Math.max(96, Math.floor(leftHeight - titleHeight));
+        windowElement.style.height = `${height}px`;
+      };
+
+      update();
+      if (!global.ResizeObserver) {
+        return;
+      }
+      const observer = new ResizeObserver(update);
+      observer.observe(left);
+      observer.observe(title);
+      categoryCertificationHeightObservers.push(observer);
+    });
   }
 
   const importanceOrder = ["关键", "瓶颈", "杠杆", "常规"];
@@ -147,6 +358,7 @@
   };
   const fixedGradeOrder = ["D", "C", "B", "A"];
   const relationOrder = ["一般", "合作", "战略"];
+  const attentionPageSize = 8;
 
   function relationshipType(category, supplier) {
     const importance = category.strategicImportance;
@@ -158,19 +370,6 @@
       type,
       ...relationshipVisual[type]
     };
-  }
-
-  function fixedPerformanceGrade(score) {
-    if (score >= 90) {
-      return "A";
-    }
-    if (score >= 80) {
-      return "B";
-    }
-    if (score >= 70) {
-      return "C";
-    }
-    return "D";
   }
 
   function strategySegment(relationType, grade) {
@@ -198,12 +397,16 @@
 
   function segmentMatrixEntries(data, suppliers, categoryId) {
     const category = data.categories.find((item) => item.id === categoryId) || data.categories[0];
+    const performanceGrades = data.performanceConfig[category.id]?.grades || [];
     const latestBySupplier = latestAssessmentBySupplier(data, suppliers, category.id);
     return suppliers
-      .filter((supplier) => supplier.categoryIds.includes(category.id) && latestBySupplier[supplier.id])
+      .filter((supplier) =>
+        ns.metrics.isCertifiedForCategory(data, supplier.id, category.id) && latestBySupplier[supplier.id]
+      )
       .map((supplier, index) => {
         const assessment = latestBySupplier[supplier.id];
-        const grade = fixedPerformanceGrade(assessment.score);
+        const customGrade = ns.metrics.getGrade(assessment.score, performanceGrades);
+        const grade = ns.metrics.getBuiltInGrade(assessment.score, performanceGrades);
         const relation = relationshipType(category, supplier);
         const segment = strategySegment(relation.type, grade);
         const gradeIndex = fixedGradeOrder.indexOf(grade);
@@ -214,6 +417,7 @@
           supplier,
           assessment,
           grade,
+          customGrade,
           relation,
           segment,
           x: 12.5 + gradeIndex * 25 + jitterX,
@@ -222,7 +426,9 @@
       });
   }
 
-  function segmentMatrixWidget(data, suppliers, categoryId, selectedSupplierId) {
+  function segmentMatrixWidget(data, suppliers, categoryId, selectedSupplierId, options = {}) {
+    const categoryAction = options.categoryAction || "set-management-segment-category";
+    const supplierAction = options.supplierAction || "set-management-segment-supplier";
     const selectedCategoryId = data.categories.some((item) => item.id === categoryId)
       ? categoryId
       : data.categories[0].id;
@@ -250,8 +456,9 @@
     const points = entries
       .map((entry) => `<button class="segment-point ${segmentVisual[entry.segment].className} ${selectedEntry?.supplier.id === entry.supplier.id ? "is-selected" : ""}"
         style="--x:${entry.x}%;--y:${entry.y}%"
-        title="${escapeHtml(`${entry.supplier.name} · ${entry.grade} · ${entry.relation.type} · ${entry.segment}`)}"
+        title="${escapeHtml(`${entry.supplier.name} · 内置${entry.grade} · ${entry.customGrade?.label || "未评级"} · ${entry.relation.type} · ${entry.segment}`)}"
         data-segment-supplier="${escapeHtml(entry.supplier.id)}"
+        data-segment-action="${escapeHtml(supplierAction)}"
         type="button">
         <span>${escapeHtml(entry.supplier.name.slice(0, 1))}</span>
       </button>`)
@@ -263,7 +470,7 @@
       ? `<div class="segment-advice-card ${selectedAdvice.className}">
           <span class="item-meta">已选供应商</span>
           <strong>${escapeHtml(selectedEntry.supplier.name)}</strong>
-          <p>${escapeHtml(selectedEntry.grade)}等级 · ${escapeHtml(selectedEntry.relation.type)}性关系 · ${escapeHtml(selectedEntry.segment)}</p>
+          <p>内置${escapeHtml(selectedEntry.grade)}等级 · ${escapeHtml(selectedEntry.customGrade?.label || "未评级")} · ${escapeHtml(selectedEntry.relation.type)}性关系 · ${escapeHtml(selectedEntry.segment)}</p>
           <ul>${selectedAdvice.actions.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
         </div>`
       : `<div class="empty-note">当前品类暂无可落点的供应商</div>`;
@@ -301,14 +508,14 @@
           ${advice}
         </aside>
       </div>`,
-      categorySelect("set-management-segment-category", data.categories, selectedCategoryId, false)
+      categorySelect(categoryAction, data.categories, selectedCategoryId, false)
     );
   }
 
   function relationshipEntries(data, suppliers, selectedCategoryId) {
     const categoryById = Object.fromEntries(data.categories.map((item) => [item.id, item]));
     return suppliers.flatMap((supplier) =>
-      supplier.categoryIds
+      ns.metrics.getCertifiedCategoryIds(data, supplier.id)
         .filter((categoryId) => selectedCategoryId === "all" || categoryId === selectedCategoryId)
         .map((categoryId) => {
           const category = categoryById[categoryId];
@@ -384,48 +591,124 @@
     );
   }
 
+  function latestCertifiedAssessment(data, supplier, selectedCategoryId) {
+    const certifiedCategoryIds = ns.metrics.getCertifiedCategoryIds(data, supplier.id);
+    const allowedCategoryIds =
+      selectedCategoryId === "all"
+        ? certifiedCategoryIds
+        : certifiedCategoryIds.includes(selectedCategoryId)
+          ? [selectedCategoryId]
+          : [];
+    const latest = data.assessments
+      .filter((item) => item.supplierId === supplier.id && allowedCategoryIds.includes(item.categoryId))
+      .sort((left, right) => right.period.localeCompare(left.period))[0];
+    if (!latest) {
+      return null;
+    }
+    const config = data.performanceConfig[latest.categoryId];
+    const category = data.categories.find((item) => item.id === latest.categoryId);
+    const grade = ns.metrics.getGrade(latest.score, config.grades);
+    const history = data.assessments
+      .filter((item) => item.supplierId === supplier.id && item.categoryId === latest.categoryId)
+      .sort((left, right) => left.period.localeCompare(right.period));
+    const previous = history.at(-2);
+    const previousGrade = previous ? ns.metrics.getGrade(previous.score, config.grades) : null;
+    const gradeRankById = Object.fromEntries(config.grades.map((item, index) => [item.id, index]));
+    const currentRank = gradeRankById[grade.id];
+    const previousRank = previousGrade ? gradeRankById[previousGrade.id] : null;
+    const trend =
+      previousRank == null || currentRank == null || previousRank === currentRank
+        ? "flat"
+        : currentRank < previousRank
+          ? "up"
+          : "down";
+    return {
+      label: selectedCategoryId === "all" ? `${category.name} · ${grade.label}` : grade.label,
+      trend
+    };
+  }
+
   function attentionTable(
     data,
     suppliers,
     selectedCategoryId,
     title = "管理关注清单",
-    categoryAction = "set-management-attention-category"
+    categoryAction = "set-management-attention-category",
+    page = 1,
+    pageAction = "set-management-attention-page"
   ) {
-    const rows = ns.selectors.managementAttention(data, suppliers).slice(0, 8);
+    const normalizedCategoryId = selectedCategoryId || "all";
+    const allRows = ns.selectors
+      .managementAttention(data, suppliers)
+      .filter((supplier) => ns.metrics.isCertifiedForCategory(data, supplier.id, normalizedCategoryId));
+    const pageCount = Math.max(1, Math.ceil(allRows.length / attentionPageSize));
+    const currentPage = Math.min(Math.max(Number(page) || 1, 1), pageCount);
+    const start = (currentPage - 1) * attentionPageSize;
+    const rows = allRows.slice(start, start + attentionPageSize);
     const orgById = Object.fromEntries(data.organizations.map((item) => [item.id, item.name]));
-    const perf = ns.selectors.performanceByCategory(
-      data,
-      suppliers.filter((supplier) => supplier.categoryIds.includes(selectedCategoryId)),
-      selectedCategoryId
-    );
-    const gradeBySupplier = Object.fromEntries(
-      perf.ranking.map((item) => [item.supplierId, item.grade.label])
-    );
+    const certificateTag = (row) => {
+      if (row.certificateExpired) {
+        return tag("已过期", "red");
+      }
+      if (row.certificateExpiring) {
+        return tag("临期", "orange");
+      }
+      return tag("正常", "green");
+    };
+    const gradeCell = (row) => {
+      const grade = latestCertifiedAssessment(data, row, normalizedCategoryId);
+      if (!grade) {
+        return tag(normalizedCategoryId === "all" ? "无认证品类评估" : "无本品类评估", "gray");
+      }
+      const indicator =
+        grade.trend === "up"
+          ? `<span class="grade-trend up" title="绩效等级上升" aria-label="绩效等级上升">▲</span>`
+          : grade.trend === "down"
+            ? `<span class="grade-trend down" title="绩效等级下降" aria-label="绩效等级下降">▼</span>`
+            : "";
+      return `${tag(grade.label, "purple")} ${indicator}`;
+    };
+    const pager = `<div class="attention-pager" aria-label="${escapeHtml(title)}分页">
+      <button class="pager-button" type="button" data-attention-page-action="${escapeHtml(pageAction)}" data-attention-page="${currentPage - 1}" ${currentPage <= 1 ? "disabled" : ""}>‹</button>
+      <span>${currentPage}/${pageCount}</span>
+      <button class="pager-button" type="button" data-attention-page-action="${escapeHtml(pageAction)}" data-attention-page="${currentPage + 1}" ${currentPage >= pageCount ? "disabled" : ""}>›</button>
+    </div>`;
     return panel(
       title,
-      "默认覆盖高风险、整改逾期、绩效下降、证照临期、淘汰/需改善",
-      table(
-        ["供应商", "组织", "级别/区分", "注册状态", "绩效等级", "风险", "整改/证照"],
-        rows,
-        (row) => `<tr data-open-supplier="${escapeHtml(row.id)}">
-          <td>${escapeHtml(row.name)}</td>
-          <td>${escapeHtml(orgById[row.orgId] || row.orgId)}</td>
-          <td>${tag(row.level, row.level === "淘汰" ? "red" : "blue")} ${tag(row.segment, row.segment === "可剔除" ? "red" : row.segment === "需改善" ? "orange" : "green")}</td>
-          <td>${tag(row.registrationStatus, row.registrationStatus === "注册完成" ? "green" : row.registrationStatus === "已失效" ? "red" : "orange")}</td>
-          <td>${gradeBySupplier[row.id] ? tag(gradeBySupplier[row.id], "purple") : tag("无本品类评估", "gray")}</td>
-          <td>${row.openRiskCount ? tag(`${row.openRiskCount}条`, "red") : tag("无", "green")}</td>
-          <td>${row.remediation ? tag(remediationStatusText[row.remediation.status] || row.remediation.status, row.remediation.status === "overdue" ? "red" : "orange") : tag("无整改", "green")} ${row.certificateExpired ? tag("已过期", "red") : row.certificateExpiring ? tag("临期", "orange") : ""}</td>
-        </tr>`
-      ),
-      categorySelect(categoryAction, data.categories, selectedCategoryId, false)
+      "默认全部品类，按认证通过的供应商-品类关系筛选关注数据",
+      `<div class="attention-table-wrap">
+        ${table(
+          ["供应商", "组织", "级别", "区分", "注册状态", "绩效等级", "风险", "整改", "证照"],
+          rows,
+          (row) => `<tr data-open-supplier="${escapeHtml(row.id)}">
+            <td>${escapeHtml(row.name)}</td>
+            <td>${escapeHtml(orgById[row.orgId] || row.orgId)}</td>
+            <td>${tag(row.level, "blue")}</td>
+            <td>${tag(row.segment, row.segment === "可剔除" ? "red" : row.segment === "需改善" ? "orange" : "green")}</td>
+            <td>${tag(row.registrationStatus, row.registrationStatus === "注册完成" ? "green" : row.registrationStatus === "已失效" ? "red" : "orange")}</td>
+            <td>${gradeCell(row)}</td>
+            <td>${row.openRiskCount ? tag(`${row.openRiskCount}条`, "red") : tag("无", "green")}</td>
+            <td>${row.remediation ? tag(remediationStatusText[row.remediation.status] || row.remediation.status, row.remediation.status === "overdue" ? "red" : "orange") : tag("无整改", "green")}</td>
+            <td>${certificateTag(row)}</td>
+          </tr>`
+        )}
+        <div class="attention-footer">
+          <span>共 ${allRows.length} 条，每页 ${attentionPageSize} 条</span>
+          ${pager}
+        </div>
+      </div>`,
+      categorySelect(categoryAction, data.categories, normalizedCategoryId, true)
     );
   }
 
   ns.widgets = ns.widgets || {};
   Object.assign(ns.widgets, {
     distributionPanel,
+    supplierGrowthFunnelWidget,
     orgDistributionWidget,
     sourceRegistrationWidget,
+    categoryCertificationOverviewWidget,
+    syncCategoryCertificationHeights,
     segmentMatrixWidget,
     relationshipMatrixWidget,
     attentionTable

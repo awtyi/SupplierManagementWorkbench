@@ -17,9 +17,14 @@
     const config = data.performanceConfig[categoryId];
     const supplierIds = new Set(suppliers.map((item) => item.id));
     const assessments = data.assessments.filter(
-      (item) => supplierIds.has(item.supplierId) && item.categoryId === categoryId
+      (item) =>
+        supplierIds.has(item.supplierId) &&
+        item.categoryId === categoryId &&
+        metrics.isCertifiedForCategory(data, item.supplierId, categoryId)
     );
-    const categorySuppliers = suppliers.filter((item) => item.categoryIds.includes(categoryId));
+    const categorySuppliers = suppliers.filter((item) =>
+      metrics.isCertifiedForCategory(data, item.id, categoryId)
+    );
     const suppliersById = supplierMap(suppliers);
     const latestBySupplier = new Map();
 
@@ -153,13 +158,13 @@
       }))
       .filter(
         (item) =>
-          item.openRiskCount > 0 ||
-          item.remediation ||
-          item.blacklisted ||
-          item.certificateExpired ||
-          item.certificateExpiring ||
-          item.level === "淘汰" ||
-          ["可剔除", "需改善"].includes(item.segment)
+          item.level !== "淘汰" &&
+          (item.openRiskCount > 0 ||
+            item.remediation ||
+            item.blacklisted ||
+            item.certificateExpired ||
+            item.certificateExpiring ||
+            ["可剔除", "需改善"].includes(item.segment))
       )
       .sort((left, right) => {
         const leftWeight = left.openRiskCount * 10 + (left.blacklisted ? 8 : 0);

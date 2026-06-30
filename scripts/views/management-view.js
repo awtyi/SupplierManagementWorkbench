@@ -29,12 +29,9 @@
         <div>${ns.widgets.orgDistributionWidget(data, suppliers)}</div>
       </section>
 
-      <section class="section-grid grid-1">
-        <div>${ns.widgets.segmentMatrixWidget(data, suppliers, state.managementSegmentCategoryId, state.managementSegmentSupplierId)}</div>
-      </section>
-
       <section class="section-grid grid-3">
         <div>${ns.widgets.distributionPanel("供应商级别分布", "新的/注册/推荐/潜在/优秀/合格/淘汰", suppliers, "level")}</div>
+        <div class="span-2">${ns.widgets.supplierGrowthFunnelWidget(suppliers)}</div>
       </section>
 
       <section class="section-grid grid-3">
@@ -42,12 +39,28 @@
         <div class="span-2">${ns.widgets.relationshipMatrixWidget(data, suppliers, state.relationshipCategoryId)}</div>
       </section>
 
+      <section class="section-grid grid-3">
+        <div class="span-2">${ns.widgets.categoryCertificationOverviewWidget(data, suppliers)}</div>
+      </section>
+
       <section class="section-grid grid-1">
         <div>${ns.widgets.performanceOverviewWidget(data, suppliers, state.managementPerformanceCategoryId, "set-management-performance-category")}</div>
       </section>
 
       <section class="section-grid grid-1">
-        <div class="span-2">${ns.widgets.attentionTable(data, suppliers, state.managementAttentionCategoryId, "管理关注清单", "set-management-attention-category")}</div>
+        <div>${ns.widgets.segmentMatrixWidget(data, suppliers, state.managementSegmentCategoryId, state.managementSegmentSupplierId)}</div>
+      </section>
+
+      <section class="section-grid grid-1">
+        <div class="span-2">${ns.widgets.attentionTable(
+          data,
+          suppliers,
+          state.managementAttentionCategoryId,
+          "管理关注清单",
+          "set-management-attention-category",
+          state.managementAttentionPage,
+          "set-management-attention-page"
+        )}</div>
       </section>
     </div>`;
   }

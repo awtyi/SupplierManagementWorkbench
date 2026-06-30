@@ -20,6 +20,24 @@
     return records.filter((item) => supplierIds.has(item.supplierId));
   }
 
+  function getCertifiedCategoryIds(data, supplierId) {
+    const certified = (data.categoryCertifications || [])
+      .filter((item) => item.supplierId === supplierId && item.status === "认证通过")
+      .map((item) => item.categoryId);
+    if (certified.length || data.categoryCertifications) {
+      return certified;
+    }
+    const supplier = data.suppliers.find((item) => item.id === supplierId);
+    return supplier?.categoryIds || [];
+  }
+
+  function isCertifiedForCategory(data, supplierId, categoryId) {
+    if (!categoryId || categoryId === "all") {
+      return true;
+    }
+    return getCertifiedCategoryIds(data, supplierId).includes(categoryId);
+  }
+
   function getPerformanceTaskSummary(data, suppliers, categoryId) {
     let tasks = recordsForSuppliers(data.performanceTasks, suppliers);
 
@@ -72,6 +90,33 @@
     return grades.find((grade) => score >= grade.min) || grades.at(-1);
   }
 
+  function getBuiltInGrade(score, grades) {
+    const grade = getGrade(score, grades);
+    return grade?.builtInGrade || grade?.id || "D";
+  }
+
+  function validatePerformanceConfig(performanceConfig) {
+    const builtInGrades = new Set(["A", "B", "C", "D"]);
+    const invalidWordsByBuiltInGrade = {
+      C: ["卓越", "优选"],
+      D: ["卓越", "优选", "良好", "稳定", "合作"]
+    };
+
+    return Object.entries(performanceConfig).flatMap(([categoryId, config]) =>
+      config.grades.flatMap((grade) => {
+        const errors = [];
+        if (!builtInGrades.has(grade.builtInGrade)) {
+          errors.push(`${categoryId}.${grade.id} 缺少有效内置等级映射`);
+        }
+        const invalidWords = invalidWordsByBuiltInGrade[grade.builtInGrade] || [];
+        if (invalidWords.some((word) => grade.label.includes(word))) {
+          errors.push(`${categoryId}.${grade.id} 的标签“${grade.label}”不应映射为内置${grade.builtInGrade}等级`);
+        }
+        return errors;
+      })
+    );
+  }
+
   function groupCount(items, key) {
     return items.reduce((accumulator, item) => {
       const value = item[key];
@@ -83,9 +128,13 @@
   ns.metrics = {
     getSupplierScope,
     recordsForSuppliers,
+    getCertifiedCategoryIds,
+    isCertifiedForCategory,
     getPerformanceTaskSummary,
     getSummary,
     getGrade,
+    getBuiltInGrade,
+    validatePerformanceConfig,
     groupCount
   };
 })(window);

@@ -32,21 +32,30 @@
 
       <section class="section-grid grid-3">
         <div>${ns.widgets.distributionPanel("我负责的供应商级别", "当前人员负责范围", suppliers, "level")}</div>
-        <div>${ns.widgets.distributionPanel("我负责的供应商区分", "当前人员负责范围", suppliers, "segment")}</div>
         <div>${ns.widgets.distributionPanel("注册状态分布", "直接读取注册状态枚举", suppliers, "registrationStatus")}</div>
       </section>
 
       <section class="section-grid grid-1">
-        <div>${ns.widgets.attentionTable(data, suppliers, state.operationsSupplierAttentionCategoryId, "供应商关注清单", "set-operations-supplier-attention-category")}</div>
-      </section>
-
-      <section class="section-grid grid-2">
-        <div>${ns.widgets.taskProgressWidget(data, suppliers, "我的绩效任务进度")}</div>
-        <div>${ns.widgets.performanceAttentionWidget(data, suppliers, state.operationsPerformanceAttentionCategoryId, "set-operations-performance-attention-category")}</div>
+        <div>${ns.widgets.performanceOverviewWidget(data, suppliers, state.operationsPerformanceOverviewCategoryId, "set-operations-performance-overview-category")}</div>
       </section>
 
       <section class="section-grid grid-1">
-        <div>${ns.widgets.performanceOverviewWidget(data, suppliers, state.operationsPerformanceOverviewCategoryId, "set-operations-performance-overview-category")}</div>
+        <div>${ns.widgets.segmentMatrixWidget(data, suppliers, state.operationsSegmentCategoryId, state.operationsSegmentSupplierId, {
+          categoryAction: "set-operations-segment-category",
+          supplierAction: "set-operations-segment-supplier"
+        })}</div>
+      </section>
+
+      <section class="section-grid grid-1">
+        <div>${ns.widgets.attentionTable(
+          data,
+          suppliers,
+          state.operationsSupplierAttentionCategoryId,
+          "供应商关注清单",
+          "set-operations-supplier-attention-category",
+          state.operationsSupplierAttentionPage,
+          "set-operations-supplier-attention-page"
+        )}</div>
       </section>
     </div>`;
   }

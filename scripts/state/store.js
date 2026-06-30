@@ -6,14 +6,17 @@
   const state = {
     view: "management",
     managementPerformanceCategoryId: "CAT-STEEL",
-    managementAttentionCategoryId: "CAT-STEEL",
+    managementAttentionCategoryId: "all",
+    managementAttentionPage: 1,
     managementRiskMethod: "LS",
     managementSegmentCategoryId: "CAT-STEEL",
     managementSegmentSupplierId: "",
     relationshipCategoryId: "all",
-    operationsSupplierAttentionCategoryId: "CAT-IT",
-    operationsPerformanceAttentionCategoryId: "CAT-IT",
+    operationsSupplierAttentionCategoryId: "all",
+    operationsSupplierAttentionPage: 1,
     operationsPerformanceOverviewCategoryId: "CAT-IT",
+    operationsSegmentCategoryId: "CAT-IT",
+    operationsSegmentSupplierId: "",
     operationsRiskMethod: "LS"
   };
 
