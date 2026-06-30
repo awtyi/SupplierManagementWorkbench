@@ -14,7 +14,9 @@
     { id: "CAT-OFFICE", name: "常规办公用品", strategicImportance: "常规" },
     { id: "CAT-STEEL", name: "钢结构件", strategicImportance: "关键" },
     { id: "CAT-IT", name: "信息化设备", strategicImportance: "瓶颈" },
-    { id: "CAT-LOGISTICS", name: "物流运输服务", strategicImportance: "杠杆" }
+    { id: "CAT-LOGISTICS", name: "物流运输服务", strategicImportance: "杠杆" },
+    { id: "CAT-MRO", name: "MRO备品备件", strategicImportance: "杠杆" },
+    { id: "CAT-PACKAGING", name: "生产包装材料", strategicImportance: "常规" }
   ];
 
   const suppliers = [
@@ -26,22 +28,22 @@
     ["S006", "江南造船厂", "ORG-EAST", "U200", ["CAT-STEEL", "CAT-LOGISTICS"], "优秀", "优选", "注册完成", "内部供应商", false, "2027-01-12", { "CAT-STEEL": "采购方有利", "CAT-LOGISTICS": "高共同利益" }],
     ["S007", "中原工业设备有限公司", "ORG-WH", "U200", ["CAT-IT"], "注册", "有价值", "注册完成", "供应商申请", false, "2026-09-10", { "CAT-IT": "高共同利益" }],
     ["S008", "海川物流服务有限公司", "ORG-SOUTH", "U201", ["CAT-LOGISTICS"], "合格", "有价值", "注册完成", "供应商申请", false, "2026-12-31", { "CAT-LOGISTICS": "采购方有利" }],
-    ["S009", "华新办公集采有限公司", "ORG-EAST", "U201", ["CAT-OFFICE"], "推荐", "优选", "注册完成", "供应商申请", false, "2027-02-14", { "CAT-OFFICE": "高共同利益" }],
+    ["S009", "华新办公集采有限公司", "ORG-EAST", "U201", ["CAT-OFFICE", "CAT-PACKAGING"], "推荐", "优选", "注册完成", "供应商申请", false, "2027-02-14", { "CAT-OFFICE": "高共同利益", "CAT-PACKAGING": "采购方有利" }],
     ["S010", "东湖数字技术有限公司", "ORG-WH", "U202", ["CAT-IT"], "新的", "有价值", "待邀请", "供应商申请", false, "2026-10-08", { "CAT-IT": "双方低利益" }],
     ["S011", "南岭工程材料有限公司", "ORG-SOUTH", "U202", ["CAT-STEEL"], "合格", "需改善", "注册完成", "内部供应商", true, "2026-07-02", { "CAT-STEEL": "供应商有利" }],
     ["S012", "长江智能装备有限公司", "ORG-WH", "U202", ["CAT-IT", "CAT-LOGISTICS"], "潜在", "有价值", "已失效", "内部供应商", false, "2026-06-24", { "CAT-IT": "双方低利益", "CAT-LOGISTICS": "供应商有利" }],
-    ["S013", "华中标准件有限公司", "ORG-WH", "U203", ["CAT-STEEL"], "合格", "有价值", "注册完成", "供应商申请", false, "2027-03-01", { "CAT-STEEL": "采购方有利" }],
-    ["S014", "江夏包装材料有限公司", "ORG-WH", "U204", ["CAT-OFFICE"], "注册", "有价值", "注册完成", "供应商申请", false, "2027-04-16", { "CAT-OFFICE": "高共同利益" }],
+    ["S013", "华中标准件有限公司", "ORG-WH", "U203", ["CAT-STEEL", "CAT-MRO"], "合格", "有价值", "注册完成", "供应商申请", false, "2027-03-01", { "CAT-STEEL": "采购方有利", "CAT-MRO": "采购方有利" }],
+    ["S014", "江夏包装材料有限公司", "ORG-WH", "U204", ["CAT-OFFICE", "CAT-PACKAGING"], "注册", "有价值", "注册完成", "供应商申请", false, "2027-04-16", { "CAT-OFFICE": "高共同利益", "CAT-PACKAGING": "供应商有利" }],
     ["S015", "博远信息服务有限公司", "ORG-WH", "U100", ["CAT-IT"], "推荐", "优选", "注册完成", "供应商申请", false, "2026-12-08", { "CAT-IT": "供应商有利" }],
-    ["S016", "东南仓配服务有限公司", "ORG-EAST", "U203", ["CAT-LOGISTICS"], "合格", "有价值", "注册完成", "内部供应商", false, "2027-05-10", { "CAT-LOGISTICS": "双方低利益" }],
+    ["S016", "东南仓配服务有限公司", "ORG-EAST", "U203", ["CAT-LOGISTICS", "CAT-MRO"], "合格", "有价值", "注册完成", "内部供应商", false, "2027-05-10", { "CAT-LOGISTICS": "双方低利益", "CAT-MRO": "供应商有利" }],
     ["S017", "苏州精密制造有限公司", "ORG-EAST", "U204", ["CAT-STEEL"], "优秀", "优选", "注册完成", "内部供应商", false, "2027-06-06", { "CAT-STEEL": "高共同利益" }],
     ["S018", "上海云帆科技有限公司", "ORG-EAST", "U200", ["CAT-IT"], "合格", "有价值", "注册完成", "内部供应商", false, "2027-01-30", { "CAT-IT": "采购方有利" }],
-    ["S019", "宁波办公服务有限公司", "ORG-EAST", "U201", ["CAT-OFFICE"], "注册", "有价值", "注册完成", "供应商申请", false, "2027-08-12", { "CAT-OFFICE": "双方低利益" }],
-    ["S020", "华南优速物流有限公司", "ORG-SOUTH", "U205", ["CAT-LOGISTICS"], "优秀", "优选", "注册完成", "内部供应商", false, "2027-07-18", { "CAT-LOGISTICS": "高共同利益" }],
-    ["S021", "佛山五金配套有限公司", "ORG-SOUTH", "U206", ["CAT-STEEL"], "合格", "有价值", "注册完成", "供应商申请", false, "2027-03-24", { "CAT-STEEL": "采购方有利" }],
+    ["S019", "宁波办公服务有限公司", "ORG-EAST", "U201", ["CAT-OFFICE", "CAT-PACKAGING"], "注册", "有价值", "注册完成", "供应商申请", false, "2027-08-12", { "CAT-OFFICE": "双方低利益", "CAT-PACKAGING": "双方低利益" }],
+    ["S020", "华南优速物流有限公司", "ORG-SOUTH", "U205", ["CAT-LOGISTICS", "CAT-PACKAGING"], "优秀", "优选", "注册完成", "内部供应商", false, "2027-07-18", { "CAT-LOGISTICS": "高共同利益", "CAT-PACKAGING": "高共同利益" }],
+    ["S021", "佛山五金配套有限公司", "ORG-SOUTH", "U206", ["CAT-STEEL", "CAT-MRO"], "合格", "有价值", "注册完成", "供应商申请", false, "2027-03-24", { "CAT-STEEL": "采购方有利", "CAT-MRO": "高共同利益" }],
     ["S022", "深圳数字集成有限公司", "ORG-SOUTH", "U100", ["CAT-IT", "CAT-OFFICE"], "推荐", "优选", "注册完成", "供应商申请", false, "2027-09-09", { "CAT-IT": "高共同利益", "CAT-OFFICE": "采购方有利" }],
-    ["S023", "燕山工业材料有限公司", "ORG-NORTH", "U207", ["CAT-STEEL"], "合格", "有价值", "注册完成", "供应商申请", false, "2027-04-02", { "CAT-STEEL": "采购方有利" }],
-    ["S024", "津门智慧物流有限公司", "ORG-NORTH", "U208", ["CAT-LOGISTICS"], "推荐", "优选", "注册完成", "内部供应商", false, "2027-05-22", { "CAT-LOGISTICS": "高共同利益" }],
+    ["S023", "燕山工业材料有限公司", "ORG-NORTH", "U207", ["CAT-STEEL", "CAT-PACKAGING"], "合格", "有价值", "注册完成", "供应商申请", false, "2027-04-02", { "CAT-STEEL": "采购方有利", "CAT-PACKAGING": "供应商有利" }],
+    ["S024", "津门智慧物流有限公司", "ORG-NORTH", "U208", ["CAT-LOGISTICS", "CAT-MRO"], "推荐", "优选", "注册完成", "内部供应商", false, "2027-05-22", { "CAT-LOGISTICS": "高共同利益", "CAT-MRO": "双方低利益" }],
     ["S025", "北方云科设备有限公司", "ORG-NORTH", "U209", ["CAT-IT"], "注册", "有价值", "注册完成", "供应商申请", false, "2027-01-18", { "CAT-IT": "供应商有利" }]
   ].map((row) => ({
     id: row[0],
@@ -91,7 +93,16 @@
     ["CC030", "S024", "CAT-LOGISTICS", "认证通过", "已认证", "2026-05-22", "2027-05-22", "U208"],
     ["CC031", "S025", "CAT-IT", "认证通过", "已认证", "2026-01-18", "2027-01-18", "U209"],
     ["CC032", "S011", "CAT-LOGISTICS", "退回整改", "补充运输资质", "2026-06-10", "", "U202"],
-    ["CC033", "S018", "CAT-STEEL", "待提交", "供应商补充材料", "2026-06-21", "", "U200"]
+    ["CC033", "S018", "CAT-STEEL", "待提交", "供应商补充材料", "2026-06-21", "", "U200"],
+    ["CC034", "S013", "CAT-MRO", "认证通过", "已认证", "2026-03-18", "2027-03-18", "U203"],
+    ["CC035", "S016", "CAT-MRO", "认证通过", "已认证", "2026-01-20", "2026-07-20", "U203"],
+    ["CC036", "S021", "CAT-MRO", "认证中", "现场评审", "2026-06-19", "", "U206"],
+    ["CC037", "S024", "CAT-MRO", "待提交", "供应商补充材料", "2026-06-22", "", "U208"],
+    ["CC038", "S009", "CAT-PACKAGING", "认证通过", "已认证", "2026-03-10", "2027-03-10", "U201"],
+    ["CC039", "S014", "CAT-PACKAGING", "认证通过", "已认证", "2026-02-10", "2026-07-10", "U204"],
+    ["CC040", "S019", "CAT-PACKAGING", "待提交", "供应商提交资料", "2026-06-20", "", "U201"],
+    ["CC041", "S020", "CAT-PACKAGING", "已失效", "认证退出", "2025-10-12", "2026-06-12", "U205"],
+    ["CC042", "S023", "CAT-PACKAGING", "退回整改", "补充环保资质", "2026-06-18", "", "U207"]
   ].map((row) => ({
     id: row[0],
     supplierId: row[1],
@@ -140,6 +151,24 @@
         { id: "D", label: "限制", min: 0, color: "#ff5b57", builtInGrade: "D" }
       ],
       kpis: ["准时到达率", "货损控制", "响应速度", "异常处理"]
+    },
+    "CAT-MRO": {
+      grades: [
+        { id: "A", label: "稳定保障", min: 90, color: "#22b573", builtInGrade: "A" },
+        { id: "B", label: "可用", min: 80, color: "#2f7df6", builtInGrade: "B" },
+        { id: "C", label: "观察", min: 68, color: "#f5a623", builtInGrade: "C" },
+        { id: "D", label: "限制", min: 0, color: "#ff5b57", builtInGrade: "D" }
+      ],
+      kpis: ["备件齐套率", "响应时效", "价格稳定性", "应急保障"]
+    },
+    "CAT-PACKAGING": {
+      grades: [
+        { id: "A", label: "优质", min: 88, color: "#22b573", builtInGrade: "A" },
+        { id: "B", label: "合格", min: 76, color: "#2f7df6", builtInGrade: "B" },
+        { id: "C", label: "改善", min: 62, color: "#f5a623", builtInGrade: "C" },
+        { id: "D", label: "停用", min: 0, color: "#ff5b57", builtInGrade: "D" }
+      ],
+      kpis: ["包装合格率", "交付及时率", "成本控制", "环保符合"]
     }
   };
 
@@ -177,7 +206,15 @@
     assessment("A027", "S022", "CAT-OFFICE", "2026-Q2", 91, [93, 90, 91]),
     assessment("A028", "S023", "CAT-STEEL", "2026-Q2", 82, [84, 81, 80, 83]),
     assessment("A029", "S024", "CAT-LOGISTICS", "2026-Q2", 89, [91, 88, 87, 90]),
-    assessment("A030", "S025", "CAT-IT", "2026-Q2", 85, [87, 84, 83, 86])
+    assessment("A030", "S025", "CAT-IT", "2026-Q2", 85, [87, 84, 83, 86]),
+    assessment("A031", "S013", "CAT-MRO", "2026-Q2", 86, [88, 85, 84, 87]),
+    assessment("A032", "S016", "CAT-MRO", "2026-Q2", 78, [76, 82, 77, 79]),
+    assessment("A033", "S021", "CAT-MRO", "2026-Q2", 91, [92, 90, 88, 94]),
+    assessment("A034", "S024", "CAT-MRO", "2026-Q2", 66, [64, 68, 67, 65]),
+    assessment("A035", "S009", "CAT-PACKAGING", "2026-Q2", 90, [92, 89, 91, 88]),
+    assessment("A036", "S014", "CAT-PACKAGING", "2026-Q2", 83, [85, 82, 80, 84]),
+    assessment("A037", "S020", "CAT-PACKAGING", "2026-Q2", 72, [70, 76, 73, 69]),
+    assessment("A038", "S023", "CAT-PACKAGING", "2026-Q2", 61, [62, 60, 63, 59])
   ];
 
   const performanceTasks = [
@@ -208,7 +245,15 @@
     ["PT25", "S022", "CAT-OFFICE", "one-off", "completed", "2026-06-24"],
     ["PT26", "S023", "CAT-STEEL", "periodic", "completed", "2026-06-24"],
     ["PT27", "S024", "CAT-LOGISTICS", "periodic", "completed", "2026-06-24"],
-    ["PT28", "S025", "CAT-IT", "periodic", "completed", "2026-06-24"]
+    ["PT28", "S025", "CAT-IT", "periodic", "completed", "2026-06-24"],
+    ["PT29", "S013", "CAT-MRO", "periodic", "completed", "2026-06-25"],
+    ["PT30", "S016", "CAT-MRO", "periodic", "in_progress", "2026-07-01"],
+    ["PT31", "S021", "CAT-MRO", "one-off", "completed", "2026-06-25"],
+    ["PT32", "S024", "CAT-MRO", "periodic", "overdue", "2026-06-18"],
+    ["PT33", "S009", "CAT-PACKAGING", "periodic", "completed", "2026-06-25"],
+    ["PT34", "S014", "CAT-PACKAGING", "periodic", "completed", "2026-06-25"],
+    ["PT35", "S020", "CAT-PACKAGING", "one-off", "in_progress", "2026-07-03"],
+    ["PT36", "S023", "CAT-PACKAGING", "periodic", "overdue", "2026-06-17"]
   ].map((row) => ({
     id: row[0],
     supplierId: row[1],

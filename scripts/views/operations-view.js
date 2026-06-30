@@ -20,14 +20,13 @@
     return `<div class="dashboard-view">
       <section class="section-grid grid-6">${cards}</section>
 
-      <section class="section-grid grid-4 operations-exception-row">
+      <section class="section-grid grid-3 operations-exception-row">
         <div class="span-2">${ns.widgets.riskWidget(data, suppliers, {
           visibleRows: 3,
           method: state.operationsRiskMethod,
           methodAction: "set-operations-risk-method"
         })}</div>
         <div>${ns.widgets.remediationWidget(data, suppliers)}</div>
-        <div>${ns.widgets.certificateWidget(data, suppliers)}</div>
       </section>
 
       <section class="section-grid grid-3">

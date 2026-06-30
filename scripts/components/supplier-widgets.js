@@ -161,6 +161,10 @@
       record.expiresAt <= addDays(data.today, 30);
   }
 
+  function isCertificationAttention(record, data) {
+    return ["待提交", "退回整改", "已失效"].includes(record.status) || isCertificationExpiring(record, data);
+  }
+
   function categoryCertificationOverviewWidget(data, suppliers) {
     const supplierById = Object.fromEntries(suppliers.map((item) => [item.id, item]));
     const categoryById = Object.fromEntries(data.categories.map((item) => [item.id, item]));
@@ -168,36 +172,62 @@
     const passed = records.filter((item) => item.status === "认证通过");
     const inProgress = records.filter((item) => ["认证中", "待提交"].includes(item.status));
     const returned = records.filter((item) => item.status === "退回整改");
+    const expired = records.filter((item) => item.status === "已失效");
     const expiring = records.filter((item) => isCertificationExpiring(item, data));
     const categoryRows = data.categories.map((category) => {
       const categoryRecords = records.filter((item) => item.categoryId === category.id);
-      const categoryPassed = categoryRecords.filter((item) => item.status === "认证通过");
-      const categoryProgress = categoryRecords.filter((item) => ["认证中", "待提交"].includes(item.status));
-      const categoryException = categoryRecords.filter((item) =>
-        ["退回整改", "已失效"].includes(item.status) || isCertificationExpiring(item, data)
+      const normalPassed = categoryRecords.filter((item) => item.status === "认证通过" && !isCertificationExpiring(item, data));
+      const certifying = categoryRecords.filter((item) => item.status === "认证中");
+      const pendingAttention = categoryRecords.filter((item) =>
+        ["待提交", "退回整改"].includes(item.status) || isCertificationExpiring(item, data)
       );
-      const width = Math.round((categoryPassed.length / Math.max(1, passed.length)) * 100);
+      const categoryExpired = categoryRecords.filter((item) => item.status === "已失效");
+      const total = categoryRecords.length;
+      const segments = [
+        { label: "已认证", value: normalPassed.length, tone: "green" },
+        { label: "认证中", value: certifying.length, tone: "blue" },
+        { label: "待处理", value: pendingAttention.length, tone: "orange" },
+        { label: "已失效", value: categoryExpired.length, tone: "red" }
+      ].map((item) => ({
+        ...item,
+        percent: total ? Math.round((item.value / total) * 100) : 0
+      }));
+      const stats = [
+        { label: "已认证", value: normalPassed.length, tone: "green" },
+        { label: "认证中", value: certifying.length, tone: "blue" },
+        { label: "待处理", value: pendingAttention.length, tone: "orange" },
+        { label: "已失效", value: categoryExpired.length, tone: "red" }
+      ].filter((item) => item.value > 0);
       return {
         category,
-        passed: categoryPassed.length,
-        progress: categoryProgress.length,
-        exception: categoryException.length,
-        width: Math.max(categoryPassed.length ? 8 : 0, width)
+        total,
+        attention: categoryRecords.filter((item) => isCertificationAttention(item, data)).length,
+        expired: categoryExpired.length,
+        pending: pendingAttention.length,
+        segments,
+        stats
       };
-    });
+    }).sort((left, right) =>
+      right.expired - left.expired ||
+      right.pending - left.pending ||
+      right.attention - left.attention ||
+      right.total - left.total ||
+      left.category.name.localeCompare(right.category.name, "zh-Hans-CN")
+    );
     const concernRows = records
-      .filter((item) => ["退回整改", "待提交", "已失效"].includes(item.status) || isCertificationExpiring(item, data))
+      .filter((item) => isCertificationAttention(item, data))
       .sort((left, right) => {
-        const order = { 退回整改: 0, 已失效: 1, 待提交: 2, 认证通过: 3 };
-        const leftOrder = isCertificationExpiring(left, data) ? 2 : order[left.status] ?? 9;
-        const rightOrder = isCertificationExpiring(right, data) ? 2 : order[right.status] ?? 9;
+        const order = { 已失效: 0, 退回整改: 1, 待提交: 2, 认证通过: 3 };
+        const leftOrder = isCertificationExpiring(left, data) ? 3 : order[left.status] ?? 9;
+        const rightOrder = isCertificationExpiring(right, data) ? 3 : order[right.status] ?? 9;
         return leftOrder - rightOrder || (left.expiresAt || "9999-12-31").localeCompare(right.expiresAt || "9999-12-31");
       });
     const metricItems = [
       { label: "已认证组合", value: passed.length, tone: "green" },
       { label: "认证中/待提交", value: inProgress.length, tone: "blue" },
       { label: "退回整改", value: returned.length, tone: "orange" },
-      { label: "即将到期", value: expiring.length, tone: "red" }
+      { label: "即将到期", value: expiring.length, tone: "red" },
+      { label: "已失效", value: expired.length, tone: "red" }
     ];
 
     return panel(
@@ -215,21 +245,27 @@
         <div class="category-cert-grid">
           <section class="category-cert-block category-cert-coverage" data-category-cert-left>
             <h3 class="mini-title">品类覆盖情况</h3>
-            ${categoryRows
-              .map((item) => `<div class="category-cert-row">
-                <div class="category-cert-row-head">
-                  <strong>${escapeHtml(item.category.name)}</strong>
-                  <span>${item.passed} 家已认证</span>
-                </div>
-                <div class="category-cert-progress">
-                  <i style="--w:${item.width}%"></i>
-                </div>
-                <div class="category-cert-row-foot">
-                  <span>认证中 ${item.progress}</span>
-                  <span>需关注 ${item.exception}</span>
-                </div>
-              </div>`)
-              .join("")}
+            <div class="category-cert-coverage-list">
+              ${categoryRows
+                .map((item) => `<div class="category-cert-row">
+                  <div class="category-cert-row-head">
+                    <strong>${escapeHtml(item.category.name)}</strong>
+                    <span>共 ${item.total} 组</span>
+                  </div>
+                  <div class="category-cert-stack ${item.total ? "" : "is-empty"}">
+                    ${item.segments
+                      .filter((segment) => segment.value)
+                      .map((segment) => `<i class="category-cert-segment ${segment.tone}" style="--w:${segment.percent}%" title="${escapeHtml(segment.label)} ${segment.value}"></i>`)
+                      .join("")}
+                  </div>
+                  <div class="category-cert-row-foot">
+                    ${item.stats
+                      .map((stat) => `<span class="category-cert-foot-stat ${stat.tone}">${escapeHtml(stat.label)} ${stat.value}</span>`)
+                      .join("")}
+                  </div>
+                </div>`)
+                .join("")}
+            </div>
           </section>
           <section class="category-cert-block category-cert-concerns">
             <h3 class="mini-title">认证关注事项</h3>
