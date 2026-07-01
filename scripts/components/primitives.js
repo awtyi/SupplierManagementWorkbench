@@ -53,6 +53,13 @@
     return `<select class="toolbar-select" data-action="${escapeHtml(id)}">${options}</select>`;
   }
 
+  function toolbarField(label, control) {
+    return `<label class="toolbar-field">
+      <span>${escapeHtml(label)}</span>
+      ${control}
+    </label>`;
+  }
+
   function table(headers, rows, rowRenderer) {
     return `<div class="table-scroll"><table class="data-table">
       <thead><tr>${headers.map((item) => `<th>${escapeHtml(item)}</th>`).join("")}</tr></thead>
@@ -72,6 +79,7 @@
     metricCard,
     panel,
     categorySelect,
+    toolbarField,
     table,
     list,
     formatInteger,

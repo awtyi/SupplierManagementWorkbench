@@ -121,12 +121,20 @@
   background: var(--red);
 }
 
+.risk-card-level.red-orange {
+  background: #ff7a45;
+}
+
 .risk-card-level.orange {
   background: var(--orange);
 }
 
 .risk-card-level.green {
   background: var(--green);
+}
+
+.risk-card-level.gray {
+  background: #9aa2af;
 }
 
 .risk-card-main {
@@ -268,46 +276,74 @@
   font-weight: 900;
 }
 
-.lec-factor-grid {
+.risk-level-cards {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: 7px;
+  margin: 4px 0 8px;
 }
 
-.lec-factor-grid span {
+.risk-level-cards.is-ls {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.risk-level-cards.is-lec {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.risk-level-card {
   min-width: 0;
-  padding: 9px 7px;
-  border: 1px solid #edf2f8;
-  border-radius: 10px;
-  background: #fff;
+  padding: 7px 6px;
+  border: 1px solid color-mix(in srgb, var(--c) 24%, #edf2f8);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--c) 11%, #fff);
   text-align: center;
 }
 
-.lec-factor-grid em,
-.lec-factor-grid strong {
+.risk-level-card em,
+.risk-level-card strong {
   display: block;
 }
 
-.lec-factor-grid em {
+.risk-level-card em {
   overflow: hidden;
-  color: var(--muted);
+  color: var(--c);
   font-size: 11px;
   font-style: normal;
-  font-weight: 700;
+  font-weight: 900;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.lec-factor-grid strong {
-  margin-top: 5px;
+.risk-level-card strong {
+  margin-top: 4px;
   color: var(--text);
-  font-size: 19px;
+  font-size: 18px;
   line-height: 1;
 }
 
-.risk-subtitle {
+.lec-bubble-chart svg {
+  display: block;
+}
+
+.lec-bubble-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 12px;
   margin-top: 4px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.lec-bubble-legend span {
+  display: inline-flex;
+  align-items: center;
+}
+
+.lec-size-note {
+  width: 100%;
+  justify-content: center;
 }
 
 .chart-legend {

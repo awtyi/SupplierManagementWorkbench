@@ -14,7 +14,7 @@
     const categories = supplier.categoryIds
       .map((id) => data.categories.find((item) => item.id === id)?.name || id)
       .join("、");
-    const openRisks = data.risks.filter((item) => item.supplierId === supplier.id && item.status === "open");
+    const openRisks = data.risks.filter((item) => item.supplierId === supplier.id && ns.metrics.isOpenRiskStatus(item.status));
     drawer.innerHTML = `<div class="drawer-head">
       <div>
         <p class="page-kicker">供应商详情摘要</p>

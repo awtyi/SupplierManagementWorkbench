@@ -2,7 +2,7 @@
   "use strict";
 
   const ns = global.SupplierDashboard;
-  const { metricCard, formatPercent } = ns.ui;
+  const { metricCard } = ns.ui;
 
   function renderManagementView(data, state) {
     const suppliers = ns.metrics.getSupplierScope(data, "management");
@@ -10,11 +10,11 @@
 
     const cards = [
       metricCard("供应商总数", summary.total, "权限组织内全部供应商", "blue"),
-      metricCard("注册完成供应商", summary.registrationCompleted, "注册状态 = 注册完成", "green"),
+      metricCard("待改善供应商", summary.improvementSegmentSuppliers, "需改善或可剔除且未淘汰", summary.improvementSegmentSuppliers ? "orange" : "green"),
       metricCard("风险供应商", summary.riskSuppliers, "存在未关闭风险的去重供应商", summary.riskSuppliers ? "red" : "green"),
-      metricCard("黑名单供应商", summary.blacklisted, "黑名单或关联异常供应商", summary.blacklisted ? "red" : "green"),
+      metricCard("绩效下降供应商", summary.decliningPerformanceSuppliers, "最近两期绩效得分下降", summary.decliningPerformanceSuppliers ? "orange" : "green"),
       metricCard("整改中供应商", summary.remediationSuppliers, "未完成整改闭环", summary.remediationSuppliers ? "orange" : "green"),
-      metricCard("绩效任务完成率", formatPercent(summary.performanceCompletion), "全部品类任务进度汇总", "purple")
+      metricCard("证照异常供应商", summary.certificateAttentionSuppliers, "已过期或未来30天临期", summary.certificateAttentionSuppliers ? "red" : "green")
     ].join("");
 
     return `<div class="dashboard-view">
@@ -44,7 +44,12 @@
       </section>
 
       <section class="section-grid grid-1">
-        <div>${ns.widgets.performanceOverviewWidget(data, suppliers, state.managementPerformanceCategoryId, "set-management-performance-category")}</div>
+        <div>${ns.widgets.performanceOverviewWidget(data, suppliers, state.managementPerformanceCategoryId, "set-management-performance-category", {
+          trendGranularity: state.managementPerformanceTrendGranularity,
+          trendGranularityAction: "set-management-performance-trend-granularity",
+          trendKpi: state.managementPerformanceTrendKpi,
+          trendKpiAction: "set-management-performance-trend-kpi"
+        })}</div>
       </section>
 
       <section class="section-grid grid-1">

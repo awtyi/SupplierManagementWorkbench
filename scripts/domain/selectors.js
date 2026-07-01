@@ -8,13 +8,100 @@
     return Object.fromEntries(suppliers.map((item) => [item.id, item]));
   }
 
-  function performanceByCategory(data, suppliers, categoryId) {
+  const chartColors = ["#2f7df6", "#20b26b", "#f59f22", "#f05b57", "#7057e8", "#68c7c1", "#9b6b43", "#4b5563"];
+
+  function parseAssessmentPeriod(period) {
+    const quarterMatch = String(period).match(/^(\d{4})-Q([1-4])$/);
+    if (quarterMatch) {
+      return {
+        year: Number(quarterMatch[1]),
+        month: (Number(quarterMatch[2]) - 1) * 3 + 1
+      };
+    }
+
+    const monthMatch = String(period).match(/^(\d{4})-(\d{2})$/);
+    if (monthMatch) {
+      return {
+        year: Number(monthMatch[1]),
+        month: Number(monthMatch[2])
+      };
+    }
+
+    const yearMatch = String(period).match(/^(\d{4})$/);
+    if (yearMatch) {
+      return {
+        year: Number(yearMatch[1]),
+        month: 1
+      };
+    }
+
+    return {
+      year: 1970,
+      month: 1
+    };
+  }
+
+  function periodSortValue(period) {
+    const parsed = parseAssessmentPeriod(period);
+    return parsed.year * 12 + parsed.month;
+  }
+
+  function bucketLabel(period, granularity) {
+    const parsed = parseAssessmentPeriod(period);
+    return bucketLabelFromParts(parsed.year, parsed.month, granularity);
+  }
+
+  function bucketLabelFromParts(year, month, granularity) {
+    if (granularity === "month") {
+      return `${year}-${String(month).padStart(2, "0")}`;
+    }
+    if (granularity === "half") {
+      return `${year}H${month <= 6 ? 1 : 2}`;
+    }
+    if (granularity === "year") {
+      return String(year);
+    }
+    return `${year}-Q${Math.floor((month - 1) / 3) + 1}`;
+  }
+
+  function continuousTrendLabels(startSortValue, endSortValue, granularity) {
+    const labels = [];
+    for (let value = startSortValue; value <= endSortValue; value += 1) {
+      const normalized = value - 1;
+      const year = Math.floor(normalized / 12);
+      const month = normalized % 12 + 1;
+      const label = bucketLabelFromParts(year, month, granularity);
+      if (!labels.includes(label)) {
+        labels.push(label);
+      }
+    }
+    return labels;
+  }
+
+  function getAssessmentValue(assessment, kpiIndex) {
+    if (kpiIndex == null) {
+      return assessment.score;
+    }
+    return assessment.kpiScores[kpiIndex] ?? assessment.score;
+  }
+
+  function performanceByCategory(data, suppliers, categoryId, options = {}) {
     if (!categoryId || categoryId === "all") {
       throw new Error("绩效得分、等级、排名和KPI分析的采购品类必须单选");
     }
 
     const category = data.categories.find((item) => item.id === categoryId);
     const config = data.performanceConfig[categoryId];
+    const granularity = options.trendGranularity || "quarter";
+    const selectedKpiValue = options.trendKpi || "total";
+    const selectedKpiIndex = selectedKpiValue === "total" ? null : Number(selectedKpiValue);
+    const kpiOptions = [
+      { value: "total", label: "总分" },
+      ...config.kpis.map((label, index) => ({ value: String(index), label }))
+    ];
+    const selectedKpiLabel = selectedKpiIndex == null
+      ? "总分"
+      : config.kpis[selectedKpiIndex] || "总分";
     const supplierIds = new Set(suppliers.map((item) => item.id));
     const assessments = data.assessments.filter(
       (item) =>
@@ -30,7 +117,7 @@
 
     for (const assessment of assessments) {
       const current = latestBySupplier.get(assessment.supplierId);
-      if (!current || assessment.period > current.period) {
+      if (!current || periodSortValue(assessment.period) > periodSortValue(current.period)) {
         latestBySupplier.set(assessment.supplierId, assessment);
       }
     }
@@ -50,7 +137,12 @@
         })),
         ranking: [],
         trend: [],
+        trendSeries: [],
+        trendLabels: [],
         kpiAverages: [],
+        kpiOptions,
+        selectedKpiLabel,
+        radar: { axes: config.kpis, series: [] },
         decliningSuppliers: []
       };
     }
@@ -70,16 +162,42 @@
       value: ranking.filter((item) => item.grade.id === grade.id).length
     }));
 
-    const periods = [...new Set(assessments.map((item) => item.period))].sort();
-    const trend = periods.map((period) => {
-      const periodItems = assessments.filter((item) => item.period === period);
+    const latestSortValue = Math.max(...assessments.map((item) => periodSortValue(item.period)));
+    const oneYearStart = latestSortValue - 11;
+    const recentAssessments = assessments.filter((item) => periodSortValue(item.period) >= oneYearStart);
+    const trendLabels = continuousTrendLabels(oneYearStart, latestSortValue, granularity);
+    const trendSeries = Array.from(latestBySupplier.keys())
+      .map((supplierId, index) => {
+        const supplierAssessments = recentAssessments.filter((item) => item.supplierId === supplierId);
+        const points = trendLabels.map((label) => {
+          const periodItems = supplierAssessments.filter((item) => bucketLabel(item.period, granularity) === label);
+          if (!periodItems.length) {
+            return null;
+          }
+          return Number(
+            (
+              periodItems.reduce((sum, item) => sum + getAssessmentValue(item, selectedKpiIndex), 0) /
+              periodItems.length
+            ).toFixed(1)
+          );
+        });
+        return {
+          supplierId,
+          label: suppliersById[supplierId].name,
+          color: chartColors[index % chartColors.length],
+          points
+        };
+      })
+      .filter((item) => item.points.some((point) => point != null));
+    const trend = trendLabels.map((label, index) => {
+      const values = trendSeries
+        .map((series) => series.points[index])
+        .filter((value) => value != null);
       return {
-        label: period,
-        value: Number(
-          (
-            periodItems.reduce((sum, item) => sum + item.score, 0) / periodItems.length
-          ).toFixed(1)
-        )
+        label,
+        value: values.length
+          ? Number((values.reduce((sum, value) => sum + value, 0) / values.length).toFixed(1))
+          : 0
       };
     });
 
@@ -95,6 +213,18 @@
       })
       .sort((left, right) => left.value - right.value);
 
+    const radar = {
+      axes: config.kpis,
+      series: latest
+        .map((item, index) => ({
+          supplierId: item.supplierId,
+          label: suppliersById[item.supplierId].name,
+          color: chartColors[index % chartColors.length],
+          values: config.kpis.map((_, kpiIndex) => item.kpiScores[kpiIndex] ?? 0)
+        }))
+        .sort((left, right) => left.label.localeCompare(right.label, "zh-Hans-CN"))
+    };
+
     const historyBySupplier = assessments.reduce((accumulator, item) => {
       if (!accumulator[item.supplierId]) {
         accumulator[item.supplierId] = [];
@@ -106,7 +236,7 @@
 
     const decliningSuppliers = Object.entries(historyBySupplier)
       .map(([supplierId, history]) => {
-        const ordered = [...history].sort((left, right) => left.period.localeCompare(right.period));
+        const ordered = [...history].sort((left, right) => periodSortValue(left.period) - periodSortValue(right.period));
         if (ordered.length < 2) {
           return null;
         }
@@ -130,14 +260,19 @@
       gradeDistribution,
       ranking,
       trend,
+      trendSeries,
+      trendLabels,
       kpiAverages,
+      kpiOptions,
+      selectedKpiLabel,
+      radar,
       decliningSuppliers
     };
   }
 
   function managementAttention(data, suppliers) {
     const openRisks = metrics.recordsForSuppliers(data.risks, suppliers).filter(
-      (item) => item.status === "open"
+      (item) => metrics.isOpenRiskStatus(item.status)
     );
     const remediationBySupplier = Object.fromEntries(
       metrics.recordsForSuppliers(data.remediations, suppliers).map((item) => [

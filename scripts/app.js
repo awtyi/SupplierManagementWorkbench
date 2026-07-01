@@ -103,7 +103,13 @@
         ns.store.setState({ relationshipCategoryId: target.value });
       }
       if (action === "set-management-performance-category") {
-        ns.store.setState({ managementPerformanceCategoryId: target.value });
+        ns.store.setState({ managementPerformanceCategoryId: target.value, managementPerformanceTrendKpi: "total" });
+      }
+      if (action === "set-management-performance-trend-granularity") {
+        ns.store.setState({ managementPerformanceTrendGranularity: target.value });
+      }
+      if (action === "set-management-performance-trend-kpi") {
+        ns.store.setState({ managementPerformanceTrendKpi: target.value });
       }
       if (action === "set-management-attention-category") {
         ns.store.setState({ managementAttentionCategoryId: target.value, managementAttentionPage: 1 });
@@ -121,7 +127,13 @@
         ns.store.setState({ operationsSupplierAttentionCategoryId: target.value, operationsSupplierAttentionPage: 1 });
       }
       if (action === "set-operations-performance-overview-category") {
-        ns.store.setState({ operationsPerformanceOverviewCategoryId: target.value });
+        ns.store.setState({ operationsPerformanceOverviewCategoryId: target.value, operationsPerformanceTrendKpi: "total" });
+      }
+      if (action === "set-operations-performance-trend-granularity") {
+        ns.store.setState({ operationsPerformanceTrendGranularity: target.value });
+      }
+      if (action === "set-operations-performance-trend-kpi") {
+        ns.store.setState({ operationsPerformanceTrendKpi: target.value });
       }
       if (action === "set-operations-risk-method") {
         ns.store.setState({ operationsRiskMethod: target.value });

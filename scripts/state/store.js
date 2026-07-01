@@ -6,6 +6,8 @@
   const state = {
     view: "management",
     managementPerformanceCategoryId: "CAT-STEEL",
+    managementPerformanceTrendGranularity: "quarter",
+    managementPerformanceTrendKpi: "total",
     managementAttentionCategoryId: "all",
     managementAttentionPage: 1,
     managementRiskMethod: "LS",
@@ -15,6 +17,8 @@
     operationsSupplierAttentionCategoryId: "all",
     operationsSupplierAttentionPage: 1,
     operationsPerformanceOverviewCategoryId: "CAT-IT",
+    operationsPerformanceTrendGranularity: "quarter",
+    operationsPerformanceTrendKpi: "total",
     operationsSegmentCategoryId: "CAT-IT",
     operationsSegmentSupplierId: "",
     operationsRiskMethod: "LS"

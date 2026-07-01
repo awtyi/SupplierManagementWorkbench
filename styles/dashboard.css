@@ -139,6 +139,16 @@
   justify-content: flex-end;
 }
 
+.toolbar-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .panel-body {
   flex: 1;
   padding: 14px 16px 16px;
@@ -178,6 +188,25 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
+  align-items: stretch;
+}
+
+.performance-overview-wide {
+  grid-column: 1 / -1;
+}
+
+.performance-overview-left {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 14px;
+  min-width: 0;
+}
+
+.performance-overview-lower {
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  gap: 14px;
+  min-width: 0;
 }
 
 .performance-overview-block {
@@ -186,6 +215,196 @@
   border: 1px solid #edf2f8;
   border-radius: 12px;
   background: var(--card-soft);
+}
+
+.performance-overview-radar {
+  min-height: 520px;
+}
+
+.ranking-dual-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.ranking-list {
+  min-width: 0;
+}
+
+.ranking-list-title {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.ranking-item {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 34px;
+  margin-top: 6px;
+  padding: 6px 8px;
+  border: 1px solid #e8eef7;
+  border-radius: 8px;
+  background: #fff;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.ranking-item:hover {
+  border-color: #cfe0f7;
+  background: #f8fbff;
+}
+
+.ranking-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #edf4ff;
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.ranking-list-attention .ranking-index {
+  background: #fff4e2;
+  color: #d98212;
+}
+
+.ranking-name {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ranking-score {
+  color: var(--text);
+  font-size: 13px;
+}
+
+.compact-empty-note {
+  padding: 16px 8px;
+  font-size: 12px;
+}
+
+.weak-kpi-list {
+  display: grid;
+  gap: 10px;
+}
+
+.weak-kpi-item {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 8px 9px;
+  border: 1px solid #e8eef7;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.weak-kpi-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #eef3fb;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.weak-kpi-name {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.weak-kpi-tag {
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: #edf4ff;
+  color: var(--blue);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.weak-kpi-score {
+  color: var(--text);
+  font-size: 13px;
+}
+
+.weak-kpi-weak {
+  border-color: #ffd8d8;
+  background: #fff8f8;
+}
+
+.weak-kpi-weak .weak-kpi-index,
+.weak-kpi-weak .weak-kpi-tag {
+  background: #ffe9e8;
+  color: #d94a45;
+}
+
+.weak-kpi-watch {
+  border-color: #ffe3b8;
+  background: #fffaf1;
+}
+
+.weak-kpi-watch .weak-kpi-index,
+.weak-kpi-watch .weak-kpi-tag {
+  background: #fff0d8;
+  color: #d98212;
+}
+
+.weak-kpi-stable .weak-kpi-index,
+.weak-kpi-stable .weak-kpi-tag {
+  background: #e8f7ef;
+  color: #1d9b61;
+}
+
+.block-note {
+  margin: -2px 0 8px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.multi-line-chart,
+.radar-chart {
+  min-width: 0;
+}
+
+.multi-line-chart svg {
+  display: block;
+}
+
+.radar-chart {
+  height: 100%;
+}
+
+.multi-line-chart .chart-legend,
+.radar-chart .chart-legend {
+  justify-content: center;
+  gap: 6px 12px;
+  margin-top: 2px;
 }
 
 .operations-exception-row .panel-body {
@@ -199,4 +418,22 @@
   color: var(--muted);
   text-align: center;
   background: var(--card-soft);
+}
+
+@media (max-width: 980px) {
+  .performance-overview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .performance-overview-lower {
+    grid-template-columns: 1fr;
+  }
+
+  .ranking-dual-list {
+    grid-template-columns: 1fr;
+  }
+
+  .performance-overview-radar {
+    min-height: 0;
+  }
 }

@@ -3,7 +3,7 @@
 
   const ns = global.SupplierDashboard;
   const { escapeHtml } = ns.util;
-  const { panel, tag, table, categorySelect } = ns.ui;
+  const { panel, tag, table, categorySelect, toolbarField } = ns.ui;
 
   const categoryCertificationHeightObservers = [];
   const palette = ["#2f7df6", "#20b26b", "#f59f22", "#f05b57", "#7457e8", "#16a6a0", "#8c98a8"];
@@ -81,7 +81,7 @@
   }
 
   function orgDistributionWidget(data, suppliers) {
-    const risks = ns.metrics.recordsForSuppliers(data.risks, suppliers).filter((item) => item.status === "open");
+    const risks = ns.metrics.recordsForSuppliers(data.risks, suppliers).filter((item) => ns.metrics.isOpenRiskStatus(item.status));
     const byOrg = data.organizations
       .map((org) => {
         const orgSuppliers = suppliers.filter((item) => item.orgId === org.id);
@@ -96,7 +96,7 @@
       .filter((item) => item.value);
     return panel(
       "采购组织分布",
-      "总量底条、注册完成进度与风险供应商标记",
+      "按采购组织对比供应商规模、注册完成与风险情况",
       `<div class="org-bullet-list">${byOrg
         .map((item) => {
           const totalWidth = 100;
@@ -223,7 +223,7 @@
         return leftOrder - rightOrder || (left.expiresAt || "9999-12-31").localeCompare(right.expiresAt || "9999-12-31");
       });
     const metricItems = [
-      { label: "已认证组合", value: passed.length, tone: "green" },
+      { label: "认证通过组合", value: passed.length, tone: "green" },
       { label: "认证中/待提交", value: inProgress.length, tone: "blue" },
       { label: "退回整改", value: returned.length, tone: "orange" },
       { label: "即将到期", value: expiring.length, tone: "red" },
@@ -424,7 +424,7 @@
       .filter((item) => supplierIds.has(item.supplierId) && item.categoryId === categoryId)
       .reduce((accumulator, item) => {
         const current = accumulator[item.supplierId];
-        if (!current || item.period > current.period) {
+        if (!current || ns.metrics.parseAssessmentPeriod(item.period) > ns.metrics.parseAssessmentPeriod(current.period)) {
           accumulator[item.supplierId] = item;
         }
         return accumulator;
@@ -513,7 +513,7 @@
 
     return panel(
       "供应商区分策略矩阵",
-      "按固定绩效等级 A/B/C/D 与企业-供应商关系细分定位供应商区分",
+      "按内置绩效等级 A/B/C/D 与企业-供应商关系细分定位供应商区分",
       `<div class="segment-strategy-layout">
         <div class="segment-matrix-shell">
           <div class="segment-axis-title vertical">关系细分（SRS）</div>
@@ -544,7 +544,7 @@
           ${advice}
         </aside>
       </div>`,
-      categorySelect(categoryAction, data.categories, selectedCategoryId, false)
+      toolbarField("采购品类", categorySelect(categoryAction, data.categories, selectedCategoryId, false))
     );
   }
 
@@ -623,7 +623,7 @@
           )
           .join("")}</div>
       </div>`,
-      categorySelect("set-relationship-category", data.categories, selectedCategoryId, true)
+      toolbarField("采购品类", categorySelect("set-relationship-category", data.categories, selectedCategoryId, true))
     );
   }
 
@@ -637,7 +637,7 @@
           : [];
     const latest = data.assessments
       .filter((item) => item.supplierId === supplier.id && allowedCategoryIds.includes(item.categoryId))
-      .sort((left, right) => right.period.localeCompare(left.period))[0];
+      .sort((left, right) => ns.metrics.parseAssessmentPeriod(right.period) - ns.metrics.parseAssessmentPeriod(left.period))[0];
     if (!latest) {
       return null;
     }
@@ -646,7 +646,7 @@
     const grade = ns.metrics.getGrade(latest.score, config.grades);
     const history = data.assessments
       .filter((item) => item.supplierId === supplier.id && item.categoryId === latest.categoryId)
-      .sort((left, right) => left.period.localeCompare(right.period));
+      .sort((left, right) => ns.metrics.parseAssessmentPeriod(left.period) - ns.metrics.parseAssessmentPeriod(right.period));
     const previous = history.at(-2);
     const previousGrade = previous ? ns.metrics.getGrade(previous.score, config.grades) : null;
     const gradeRankById = Object.fromEntries(config.grades.map((item, index) => [item.id, index]));
@@ -711,7 +711,7 @@
     </div>`;
     return panel(
       title,
-      "默认全部品类，按认证通过的供应商-品类关系筛选关注数据",
+      "按认证通过的供应商-品类关系筛选关注数据",
       `<div class="attention-table-wrap">
         ${table(
           ["供应商", "组织", "级别", "区分", "注册状态", "绩效等级", "风险", "整改", "证照"],
@@ -733,7 +733,7 @@
           ${pager}
         </div>
       </div>`,
-      categorySelect(categoryAction, data.categories, normalizedCategoryId, true)
+      toolbarField("采购品类", categorySelect(categoryAction, data.categories, normalizedCategoryId, true))
     );
   }
 

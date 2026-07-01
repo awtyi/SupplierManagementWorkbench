@@ -20,6 +20,35 @@
     return records.filter((item) => supplierIds.has(item.supplierId));
   }
 
+  function isOpenRiskStatus(status) {
+    return ["open", "分析中", "应对中"].includes(status);
+  }
+
+  function addDays(dateText, days) {
+    const date = new Date(`${dateText}T00:00:00`);
+    date.setDate(date.getDate() + days);
+    return date.toISOString().slice(0, 10);
+  }
+
+  function parseAssessmentPeriod(period) {
+    const quarterMatch = String(period).match(/^(\d{4})-Q([1-4])$/);
+    if (quarterMatch) {
+      return Number(quarterMatch[1]) * 12 + (Number(quarterMatch[2]) - 1) * 3 + 1;
+    }
+
+    const monthMatch = String(period).match(/^(\d{4})-(\d{2})$/);
+    if (monthMatch) {
+      return Number(monthMatch[1]) * 12 + Number(monthMatch[2]);
+    }
+
+    const yearMatch = String(period).match(/^(\d{4})$/);
+    if (yearMatch) {
+      return Number(yearMatch[1]) * 12 + 1;
+    }
+
+    return 0;
+  }
+
   function getCertifiedCategoryIds(data, supplierId) {
     const certified = (data.categoryCertifications || [])
       .filter((item) => item.supplierId === supplierId && item.status === "认证通过")
@@ -58,15 +87,46 @@
     };
   }
 
+  function getDecliningPerformanceSupplierCount(data, suppliers) {
+    const supplierIds = new Set(suppliers.map((item) => item.id));
+    const historyBySupplierCategory = data.assessments
+      .filter((item) => supplierIds.has(item.supplierId))
+      .reduce((accumulator, item) => {
+        const key = `${item.supplierId}::${item.categoryId}`;
+        accumulator[key] = accumulator[key] || [];
+        accumulator[key].push(item);
+        return accumulator;
+      }, {});
+
+    const decliningSupplierIds = new Set();
+    Object.values(historyBySupplierCategory).forEach((history) => {
+      const ordered = history.sort((left, right) => parseAssessmentPeriod(left.period) - parseAssessmentPeriod(right.period));
+      if (ordered.length < 2) {
+        return;
+      }
+      const previous = ordered.at(-2);
+      const latest = ordered.at(-1);
+      if (latest.score < previous.score) {
+        decliningSupplierIds.add(latest.supplierId);
+      }
+    });
+
+    return decliningSupplierIds.size;
+  }
+
   function getSummary(data, suppliers) {
     const risks = recordsForSuppliers(data.risks, suppliers).filter(
-      (item) => item.status === "open"
+      (item) => isOpenRiskStatus(item.status)
     );
     const remediations = recordsForSuppliers(data.remediations, suppliers).filter(
       (item) => item.status !== "completed"
     );
     const workflows = recordsForSuppliers(data.workflows, suppliers);
     const tasks = getPerformanceTaskSummary(data, suppliers, "all");
+    const performanceTaskAttentionDueDate = addDays(data.today, 7);
+    const performanceTaskAttention = recordsForSuppliers(data.performanceTasks, suppliers).filter(
+      (item) => item.status !== "completed" && item.dueDate <= performanceTaskAttentionDueDate
+    );
 
     return {
       total: suppliers.length,
@@ -74,11 +134,22 @@
         (item) => item.registrationStatus === "注册完成"
       ).length,
       riskSuppliers: uniqueSupplierCount(risks),
+      openRiskCount: risks.length,
       blacklisted: suppliers.filter((item) => item.blacklisted).length,
       remediationSuppliers: uniqueSupplierCount(remediations),
       performanceCompletion: tasks.completionRate,
+      decliningPerformanceSuppliers: getDecliningPerformanceSupplierCount(data, suppliers),
+      certificateAttentionSuppliers: suppliers.filter(
+        (item) =>
+          item.certificateExpiry < data.today ||
+          (item.certificateExpiry >= data.today && item.certificateExpiry <= "2026-07-25")
+      ).length,
+      improvementSegmentSuppliers: suppliers.filter(
+        (item) => item.level !== "淘汰" && ["需改善", "可剔除"].includes(item.segment)
+      ).length,
       pendingWorkflows: workflows.filter((item) => item.status !== "已完成").length,
       overdueWorkflows: workflows.filter((item) => item.status === "已逾期").length,
+      dueOrOverduePerformanceTasks: performanceTaskAttention.length,
       expiringCertificates: suppliers.filter(
         (item) =>
           item.certificateExpiry >= data.today && item.certificateExpiry <= "2026-07-25"
@@ -128,6 +199,8 @@
   ns.metrics = {
     getSupplierScope,
     recordsForSuppliers,
+    isOpenRiskStatus,
+    parseAssessmentPeriod,
     getCertifiedCategoryIds,
     isCertifiedForCategory,
     getPerformanceTaskSummary,

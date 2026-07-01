@@ -33,7 +33,7 @@
       .sort((a, b) => a.dueDate.localeCompare(b.dueDate));
     return panel(
       "我的流程待办",
-      "组件内筛选：流程类型 / 流程状态 / 时间范围",
+      "按流程类型、状态与时间范围筛选待办",
       table(["供应商", "流程", "节点", "截止", "状态"], rows, (row) => `<tr data-open-supplier="${escapeHtml(row.supplierId)}">
         <td>${escapeHtml(supplierById[row.supplierId]?.name || row.supplierId)}</td>
         <td>${escapeHtml(row.type)}</td>
