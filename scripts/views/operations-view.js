@@ -20,17 +20,18 @@
     return `<div class="dashboard-view">
       <section class="section-grid grid-6">${cards}</section>
 
-      <section class="section-grid grid-1 operations-exception-row">
-        <div>${ns.widgets.riskWidget(data, suppliers, {
+      <section class="section-grid grid-3 operations-exception-row">
+        <div>
+          <div class="layout-stack operations-side-stack">
+            ${ns.widgets.distributionPanel("我负责的供应商级别", "当前人员负责范围", suppliers, "level")}
+            ${ns.widgets.distributionPanel("注册状态分布", "按注册状态统计当前负责供应商", suppliers, "registrationStatus")}
+          </div>
+        </div>
+        <div class="span-2">${ns.widgets.riskWidget(data, suppliers, {
           visibleRows: 3,
           method: state.operationsRiskMethod,
           methodAction: "set-operations-risk-method"
         })}</div>
-      </section>
-
-      <section class="section-grid grid-3">
-        <div>${ns.widgets.distributionPanel("我负责的供应商级别", "当前人员负责范围", suppliers, "level")}</div>
-        <div>${ns.widgets.distributionPanel("注册状态分布", "按注册状态统计当前负责供应商", suppliers, "registrationStatus")}</div>
       </section>
 
       <section class="section-grid grid-1">

@@ -21,12 +21,17 @@
       <section class="section-grid grid-6">${cards}</section>
 
       <section class="section-grid grid-3">
+        <div>
+          <div class="layout-stack management-side-stack">
+            ${ns.widgets.sourceRegistrationWidget(suppliers)}
+            ${ns.widgets.orgDistributionWidget(data, suppliers)}
+          </div>
+        </div>
         <div class="span-2">${ns.widgets.riskWidget(data, suppliers, {
           visibleRows: 4,
           method: state.managementRiskMethod,
           methodAction: "set-management-risk-method"
         })}</div>
-        <div>${ns.widgets.orgDistributionWidget(data, suppliers)}</div>
       </section>
 
       <section class="section-grid grid-3">
@@ -34,13 +39,12 @@
         <div class="span-2">${ns.widgets.supplierGrowthFunnelWidget(suppliers)}</div>
       </section>
 
-      <section class="section-grid grid-3">
-        <div>${ns.widgets.sourceRegistrationWidget(suppliers)}</div>
-        <div class="span-2">${ns.widgets.relationshipMatrixWidget(data, suppliers, state.relationshipCategoryId)}</div>
+      <section class="section-grid grid-1">
+        <div>${ns.widgets.categoryCertificationOverviewWidget(data, suppliers)}</div>
       </section>
 
-      <section class="section-grid grid-3">
-        <div class="span-2">${ns.widgets.categoryCertificationOverviewWidget(data, suppliers)}</div>
+      <section class="section-grid grid-1">
+        <div>${ns.widgets.relationshipMatrixWidget(data, suppliers, state.relationshipCategoryId)}</div>
       </section>
 
       <section class="section-grid grid-1">

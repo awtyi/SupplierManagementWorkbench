@@ -97,36 +97,38 @@
     return panel(
       "采购组织分布",
       "按采购组织对比供应商规模、注册完成与风险情况",
-      `<div class="org-bullet-list">${byOrg
-        .map((item) => {
-          const totalWidth = 100;
-          const registeredWidth = item.registered
-            ? Math.max(8, Math.round((item.registered / item.value) * 100))
-            : 0;
-          const riskOffset = Math.min(100, Math.max(7, Math.round((item.risk / item.value) * 100)));
-          return `<div class="org-bullet">
-            <div class="org-bullet-head">
-              <strong>${escapeHtml(item.label)}</strong>
-              <span>${item.value} 家</span>
-            </div>
-            <div class="org-bullet-track">
-              <i class="org-bullet-total" style="--w:${totalWidth}%"></i>
-              <i class="org-bullet-registered" style="--w:${registeredWidth}%">
-                ${item.registered ? `<span>${item.registered}</span>` : ""}
-              </i>
-              ${item.risk ? `<b class="org-bullet-risk" style="--x:${riskOffset}%">${item.risk}</b>` : ""}
-            </div>
-            <div class="org-bullet-meta">
-              <span>注册完成 ${item.registered}/${item.value}</span>
-              <span>风险供应商 ${item.risk}</span>
-            </div>
-          </div>`;
-        })
-        .join("")}</div>
-      <div class="chart-legend compact-legend">
-        <span style="color:#2f7df6"><i class="legend-dot"></i>组织供应商总量</span>
-        <span style="color:#20b26b"><i class="legend-dot"></i>注册完成率</span>
-        <span style="color:#f05b57"><i class="legend-dot"></i>风险供应商</span>
+      `<div class="org-distribution-body">
+        <div class="org-bullet-list">${byOrg
+          .map((item) => {
+            const totalWidth = 100;
+            const registeredWidth = item.registered
+              ? Math.max(8, Math.round((item.registered / item.value) * 100))
+              : 0;
+            const riskOffset = Math.min(100, Math.max(7, Math.round((item.risk / item.value) * 100)));
+            return `<div class="org-bullet">
+              <div class="org-bullet-head">
+                <strong>${escapeHtml(item.label)}</strong>
+                <span>${item.value} 家</span>
+              </div>
+              <div class="org-bullet-track">
+                <i class="org-bullet-total" style="--w:${totalWidth}%"></i>
+                <i class="org-bullet-registered" style="--w:${registeredWidth}%">
+                  ${item.registered ? `<span>${item.registered}</span>` : ""}
+                </i>
+                ${item.risk ? `<b class="org-bullet-risk" style="--x:${riskOffset}%">${item.risk}</b>` : ""}
+              </div>
+              <div class="org-bullet-meta">
+                <span>注册完成 ${item.registered}/${item.value}</span>
+                <span>风险供应商 ${item.risk}</span>
+              </div>
+            </div>`;
+          })
+          .join("")}</div>
+        <div class="chart-legend compact-legend">
+          <span style="color:#2f7df6"><i class="legend-dot"></i>组织供应商总量</span>
+          <span style="color:#20b26b"><i class="legend-dot"></i>注册完成率</span>
+          <span style="color:#f05b57"><i class="legend-dot"></i>风险供应商</span>
+        </div>
       </div>`
     );
   }

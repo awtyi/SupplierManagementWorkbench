@@ -162,8 +162,8 @@
 
   function renderLecBubblePlot(risks) {
     const width = 460;
-    const height = 250;
-    const plot = { left: 42, top: 18, right: 432, bottom: 204 };
+    const height = 320;
+    const plot = { left: 42, top: 24, right: 432, bottom: 266 };
     const likelihoodScale = [0.1, 0.2, 0.5, 1, 3, 6, 10];
     const consequenceScale = [1, 3, 7, 15, 40, 100];
     const scaleIndex = (scale, value) => Math.max(0, scale.findIndex((item) => item === value));
@@ -294,21 +294,23 @@
     const layouts = [...root.querySelectorAll(".risk-layout")];
     layouts.forEach((layout) => {
       const left = layout.querySelector("[data-risk-left]");
+      const analysisCard = left?.querySelector(".risk-analysis-card");
       const carousel = layout.querySelector("[data-risk-carousel]");
       const title = carousel?.querySelector(".risk-carousel-title");
       const windowElement = carousel?.querySelector(".risk-carousel-window");
-      if (!left || !carousel || !title || !windowElement) {
+      if (!left || !analysisCard || !carousel || !title || !windowElement) {
         return;
       }
 
       const update = () => {
-        const leftHeight = left.getBoundingClientRect().height;
+        const leftHeight = analysisCard.getBoundingClientRect().height;
         const titleStyle = getComputedStyle(title);
         const titleHeight =
           title.getBoundingClientRect().height +
           parseFloat(titleStyle.marginTop || 0) +
           parseFloat(titleStyle.marginBottom || 0);
         const height = Math.max(0, Math.floor(leftHeight - titleHeight));
+        carousel.style.height = `${Math.floor(leftHeight)}px`;
         windowElement.style.height = `${height}px`;
       };
 
@@ -317,7 +319,7 @@
         return;
       }
       const observer = new ResizeObserver(update);
-      observer.observe(left);
+      observer.observe(analysisCard);
       observer.observe(title);
       riskHeightObservers.push(observer);
     });

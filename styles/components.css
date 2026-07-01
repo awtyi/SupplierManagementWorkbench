@@ -46,17 +46,31 @@
 }
 
 .risk-layout {
+  --risk-analysis-height: 520px;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(235px, 1fr));
   gap: 14px;
   align-items: start;
 }
 
+.risk-left {
+  display: flex;
+  min-width: 0;
+  height: var(--risk-analysis-height);
+  min-height: 0;
+}
+
+.risk-left > .risk-analysis-card {
+  flex: 1 1 auto;
+}
+
 .risk-carousel {
   display: flex;
+  height: var(--risk-analysis-height);
   min-height: 0;
   min-width: 0;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .risk-carousel-title {
@@ -67,7 +81,7 @@
 }
 
 .risk-carousel-window {
-  height: var(--risk-carousel-window-height, auto);
+  height: var(--risk-carousel-window-height, calc(var(--risk-analysis-height) - 28px));
   min-height: 0;
   overflow: hidden;
   border-top: 1px solid #edf2f8;
@@ -191,7 +205,13 @@
 }
 
 .risk-analysis-card {
-  min-height: 190px;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  flex-direction: column;
+  box-sizing: border-box;
+  overflow: hidden;
   padding: 12px;
   border: 1px solid #edf2f8;
   border-radius: 12px;
@@ -221,8 +241,11 @@
 .risk-matrix-wrap {
   display: grid;
   grid-template-columns: 18px minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto;
+  flex: 1 1 auto;
   gap: 7px;
   align-items: center;
+  min-height: 0;
 }
 
 .risk-axis-y {
@@ -239,16 +262,18 @@
 .risk-matrix-grid {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-rows: repeat(5, minmax(0, 1fr));
   gap: 4px;
+  height: 100%;
   min-width: 0;
+  min-height: 0;
 }
 
 .risk-matrix-cell {
   display: flex;
   align-items: center;
   justify-content: center;
-  aspect-ratio: 1.12;
-  min-height: 24px;
+  min-height: 0;
   border-radius: 6px;
   color: #fff;
   font-size: 12px;
@@ -321,8 +346,17 @@
   line-height: 1;
 }
 
+.lec-bubble-chart {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  flex-direction: column;
+  justify-content: center;
+}
+
 .lec-bubble-chart svg {
   display: block;
+  max-height: 100%;
 }
 
 .lec-bubble-legend {
@@ -366,12 +400,38 @@
   align-items: center;
   justify-content: center;
   height: 100%;
+  min-height: 0;
 }
 
 .donut-figure svg {
   max-width: 190px;
   margin: 0 auto;
   display: block;
+}
+
+.operations-side-stack .donut-figure {
+  justify-content: center;
+  gap: 6px;
+  overflow: hidden;
+}
+
+.operations-side-stack .donut-figure svg {
+  height: 142px;
+  max-width: 154px;
+  flex: 0 1 auto;
+}
+
+.operations-side-stack .chart-legend {
+  gap: 4px 8px;
+  margin-top: 0;
+  max-width: 100%;
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+.operations-side-stack .chart-legend span {
+  min-width: 0;
+  white-space: nowrap;
 }
 
 .compact-donut {
@@ -493,12 +553,22 @@
   border-radius: inherit;
 }
 
+.org-distribution-body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
 .org-bullet-list {
   display: flex;
-  min-height: 212px;
+  flex: 1 1 auto;
+  min-height: 0;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 14px;
+  overflow-y: auto;
+  padding: 2px 5px 2px 0;
 }
 
 .org-bullet-head,
