@@ -48,8 +48,16 @@
   flex: 1 1 0;
 }
 
+.operations-side-stack > .panel .panel-header {
+  padding-bottom: 12px;
+}
+
 .operations-side-stack > .panel .panel-body {
-  padding-bottom: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 10px;
+  padding-bottom: 10px;
 }
 
 .grid-1 {

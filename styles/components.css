@@ -410,26 +410,37 @@
 }
 
 .operations-side-stack .donut-figure {
+  display: grid;
+  grid-template-columns: auto minmax(112px, max-content);
+  align-items: center;
   justify-content: center;
-  gap: 6px;
+  width: 100%;
+  height: auto;
+  max-height: 100%;
+  gap: 18px;
   overflow: hidden;
 }
 
 .operations-side-stack .donut-figure svg {
-  height: 142px;
-  max-width: 154px;
+  height: 166px;
+  max-width: 176px;
   flex: 0 1 auto;
 }
 
 .operations-side-stack .chart-legend {
-  gap: 4px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
   margin-top: 0;
   max-width: 100%;
-  font-size: 11px;
-  line-height: 1.25;
+  font-size: 12px;
+  line-height: 1.32;
 }
 
 .operations-side-stack .chart-legend span {
+  display: inline-flex;
+  align-items: center;
   min-width: 0;
   white-space: nowrap;
 }

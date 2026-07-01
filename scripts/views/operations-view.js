@@ -9,7 +9,7 @@
     const summary = ns.metrics.getSummary(data, suppliers);
 
     const cards = [
-      metricCard("我负责的供应商", summary.total, "当前人员作为负责人/管理员", "blue"),
+      metricCard("我负责的供应商", summary.total, "当前人员作为供应商负责人", "blue"),
       metricCard("待处理流程", summary.pendingWorkflows, "审批中、待提交、退回、逾期", summary.pendingWorkflows ? "orange" : "green"),
       metricCard("临期/逾期评估任务", summary.dueOrOverduePerformanceTasks, "未来7天到期或已逾期的绩效评估", summary.dueOrOverduePerformanceTasks ? "red" : "green"),
       metricCard("未关闭风险", summary.openRiskCount, "我负责供应商的未关闭风险总数", summary.openRiskCount ? "red" : "green"),
@@ -23,8 +23,8 @@
       <section class="section-grid grid-3 operations-exception-row">
         <div>
           <div class="layout-stack operations-side-stack">
-            ${ns.widgets.distributionPanel("我负责的供应商级别", "当前人员负责范围", suppliers, "level")}
-            ${ns.widgets.distributionPanel("注册状态分布", "按注册状态统计当前负责供应商", suppliers, "registrationStatus")}
+            ${ns.widgets.distributionPanel("我负责的供应商级别", "", suppliers, "level")}
+            ${ns.widgets.distributionPanel("注册状态分布", "", suppliers, "registrationStatus")}
           </div>
         </div>
         <div class="span-2">${ns.widgets.riskWidget(data, suppliers, {
