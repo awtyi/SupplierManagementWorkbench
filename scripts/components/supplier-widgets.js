@@ -34,48 +34,102 @@
       ["合格", "优秀"].includes(supplier.level)
     );
     const excellentSuppliers = registeredSuppliers.filter((supplier) => supplier.level === "优秀");
-    const denominator = Math.max(total, 1);
     const levels = [
       { label: "所有供应商", value: total, color: "#2f7df6" },
       { label: "注册供应商", value: registeredSuppliers.length, color: "#16a6a0" },
       { label: "合格供应商", value: qualifiedSuppliers.length, color: "#20b26b" },
       { label: "优秀供应商", value: excellentSuppliers.length, color: "#7457e8" }
     ];
+    const enrichedLevels = levels.map((item, index) => {
+      const previous = levels[index - 1];
+      return {
+        ...item,
+        totalRate: total ? Math.round((item.value / total) * 100) : 0,
+        parentRate: previous?.value ? `${Math.round((item.value / previous.value) * 100)}%` : "-"
+      };
+    });
+    const bounds = [
+      { y: 30, width: 156 },
+      { y: 82, width: 126 },
+      { y: 132, width: 96 },
+      { y: 180, width: 64 },
+      { y: 224, width: 36 }
+    ];
+    const cx = 210;
+    const bandPath = (top, bottom) => {
+      const leftTop = cx - top.width;
+      const rightTop = cx + top.width;
+      const leftBottom = cx - bottom.width;
+      const rightBottom = cx + bottom.width;
+      return [
+        `M ${leftTop} ${top.y}`,
+        `C ${leftTop + 10} ${top.y + 18}, ${leftBottom - 4} ${bottom.y - 18}, ${leftBottom} ${bottom.y}`,
+        `Q ${cx} ${bottom.y + 16} ${rightBottom} ${bottom.y}`,
+        `C ${rightBottom + 4} ${bottom.y - 18}, ${rightTop - 10} ${top.y + 18}, ${rightTop} ${top.y}`,
+        `Q ${cx} ${top.y + 16} ${leftTop} ${top.y}`,
+        "Z"
+      ].join(" ");
+    };
+    const conversionRows = enrichedLevels.slice(1).map((item, index) => {
+      const fromLabel = enrichedLevels[index].label.replace("供应商", "");
+      const toLabel = item.label.replace("供应商", "");
+      return `<div class="supplier-growth-conversion">
+        <span>${escapeHtml(fromLabel)} → ${escapeHtml(toLabel)}</span>
+        <strong>${item.parentRate}</strong>
+      </div>`;
+    });
 
     return panel(
       "供应商成长漏斗",
       "所有供应商 → 注册供应商 → 合格供应商 → 优秀供应商",
       `<div class="supplier-growth-funnel">
-        ${levels
-          .map((item, index) => {
-            const width = Math.round((item.value / denominator) * 100);
-            const totalRate = total ? Math.round((item.value / total) * 100) : 0;
-            const previous = levels[index - 1];
-            const parentRate = previous?.value ? `${Math.round((item.value / previous.value) * 100)}%` : "-";
-            const isInsideLabel = item.value > 0 && width >= 16;
-            const isTiny = item.value > 0 && width < 16;
-            const label = `${item.label} ${item.value}`;
-            return `<div class="supplier-growth-row">
-              <div class="supplier-growth-rate">
-                <span>占全部</span>
-                <strong>${totalRate}%</strong>
+        <div class="supplier-growth-levels">
+          ${enrichedLevels
+            .map((item) => `<div class="supplier-growth-level" style="--c:${item.color}">
+              <span class="supplier-growth-dot"></span>
+              <div>
+                <b>${escapeHtml(item.label)}</b>
+                <small>占全部 ${item.totalRate}%</small>
               </div>
-              <div class="supplier-growth-main">
-                <div class="supplier-growth-track ${item.value ? "" : "is-empty"}">
-                  <span class="supplier-growth-bar ${isTiny ? "is-tiny" : ""}" style="--w:${width}%;--c:${item.color}">
-                    ${isInsideLabel ? `<span class="supplier-growth-label is-inside">${escapeHtml(item.label)} <strong>${item.value}</strong></span>` : ""}
-                  </span>
-                  ${isTiny ? `<i class="supplier-growth-marker" style="--c:${item.color}"></i>` : ""}
-                  ${isInsideLabel ? "" : `<span class="supplier-growth-label is-outside">${escapeHtml(label)}</span>`}
-                </div>
-              </div>
-              <div class="supplier-growth-rate is-right">
-                <span>占上层</span>
-                <strong>${parentRate}</strong>
-              </div>
-            </div>`;
-          })
-          .join("")}
+              <strong>${item.value}</strong>
+            </div>`)
+            .join("")}
+        </div>
+        <div class="supplier-growth-visual">
+          <svg class="supplier-growth-svg" viewBox="0 0 420 260" role="img" aria-label="供应商成长漏斗">
+            <defs>
+              <filter id="supplier-growth-soft-shadow" x="-20%" y="-20%" width="140%" height="150%">
+                <feDropShadow dx="0" dy="10" stdDeviation="8" flood-color="#1a2d4b" flood-opacity="0.14" />
+              </filter>
+              ${enrichedLevels
+                .map((item, index) => `<linearGradient id="supplier-growth-gradient-${index}" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="${item.color}" stop-opacity="0.78" />
+                  <stop offset="56%" stop-color="${item.color}" stop-opacity="0.48" />
+                  <stop offset="100%" stop-color="${item.color}" stop-opacity="0.26" />
+                </linearGradient>`)
+                .join("")}
+            </defs>
+            <ellipse class="supplier-growth-floor" cx="${cx}" cy="232" rx="72" ry="14" />
+            <g filter="url(#supplier-growth-soft-shadow)">
+              ${enrichedLevels
+                .map((item, index) => {
+                  const labelY = (bounds[index].y + bounds[index + 1].y) / 2;
+                  const labelOffset = index === 0 ? 15 : 5;
+                  return `<path class="supplier-growth-band" d="${bandPath(bounds[index], bounds[index + 1])}" fill="url(#supplier-growth-gradient-${index})" />
+                    <text class="supplier-growth-svg-label" x="${cx}" y="${labelY + labelOffset}">${escapeHtml(item.label)}</text>`;
+                })
+                .join("")}
+              <ellipse class="supplier-growth-mouth" cx="${cx}" cy="30" rx="156" ry="22" />
+              <ellipse class="supplier-growth-mouth-inner" cx="${cx}" cy="30" rx="104" ry="12" />
+            </g>
+          </svg>
+        </div>
+        <div class="supplier-growth-insight">
+          <strong>转化说明</strong>
+          <div class="supplier-growth-conversions">
+            ${conversionRows.join("")}
+          </div>
+        </div>
       </div>`
     );
   }
@@ -93,18 +147,20 @@
           registered: orgSuppliers.filter((item) => item.registrationStatus === "注册完成").length
         };
       })
-      .filter((item) => item.value);
+      .filter((item) => item.value)
+      .sort((a, b) => b.value - a.value);
+    const maxOrgTotal = Math.max(1, ...byOrg.map((item) => item.value));
     return panel(
       "采购组织分布",
       "按采购组织对比供应商规模、注册完成与风险情况",
       `<div class="org-distribution-body">
         <div class="org-bullet-list">${byOrg
           .map((item) => {
-            const totalWidth = 100;
+            const totalWidth = Math.max(1, Math.round((item.value / maxOrgTotal) * 100));
             const registeredWidth = item.registered
-              ? Math.max(8, Math.round((item.registered / item.value) * 100))
+              ? Math.min(totalWidth, Math.max(1, Math.round((item.registered / maxOrgTotal) * 100)))
               : 0;
-            const riskOffset = Math.min(100, Math.max(7, Math.round((item.risk / item.value) * 100)));
+            const riskOffset = Math.min(100, Math.max(1, Math.round((item.risk / maxOrgTotal) * 100)));
             return `<div class="org-bullet">
               <div class="org-bullet-head">
                 <strong>${escapeHtml(item.label)}</strong>
@@ -190,10 +246,7 @@
         { label: "认证中", value: certifying.length, tone: "blue" },
         { label: "待处理", value: pendingAttention.length, tone: "orange" },
         { label: "已失效", value: categoryExpired.length, tone: "red" }
-      ].map((item) => ({
-        ...item,
-        percent: total ? Math.round((item.value / total) * 100) : 0
-      }));
+      ];
       const stats = [
         { label: "已认证", value: normalPassed.length, tone: "green" },
         { label: "认证中", value: certifying.length, tone: "blue" },
@@ -203,6 +256,7 @@
       return {
         category,
         total,
+        certified: normalPassed.length,
         attention: categoryRecords.filter((item) => isCertificationAttention(item, data)).length,
         expired: categoryExpired.length,
         pending: pendingAttention.length,
@@ -210,12 +264,14 @@
         stats
       };
     }).sort((left, right) =>
+      right.certified - left.certified ||
       right.expired - left.expired ||
       right.pending - left.pending ||
       right.attention - left.attention ||
       right.total - left.total ||
       left.category.name.localeCompare(right.category.name, "zh-Hans-CN")
     );
+    const maxCategoryTotal = Math.max(1, ...categoryRows.map((item) => item.total));
     const concernRows = records
       .filter((item) => isCertificationAttention(item, data))
       .sort((left, right) => {
@@ -257,7 +313,10 @@
                   <div class="category-cert-stack ${item.total ? "" : "is-empty"}">
                     ${item.segments
                       .filter((segment) => segment.value)
-                      .map((segment) => `<i class="category-cert-segment ${segment.tone}" style="--w:${segment.percent}%" title="${escapeHtml(segment.label)} ${segment.value}"></i>`)
+                      .map((segment) => {
+                        const percent = Math.max(1, Math.round((segment.value / maxCategoryTotal) * 100));
+                        return `<i class="category-cert-segment ${segment.tone}" style="--w:${percent}%" title="${escapeHtml(segment.label)} ${segment.value}"></i>`;
+                      })
                       .join("")}
                   </div>
                   <div class="category-cert-row-foot">
@@ -716,14 +775,13 @@
       "按认证通过的供应商-品类关系筛选关注数据",
       `<div class="attention-table-wrap">
         ${table(
-          ["供应商", "组织", "级别", "区分", "注册状态", "绩效等级", "风险", "整改", "证照"],
+          ["供应商", "组织", "级别", "区分", "绩效等级", "风险", "整改", "证照"],
           rows,
           (row) => `<tr data-open-supplier="${escapeHtml(row.id)}">
             <td>${escapeHtml(row.name)}</td>
             <td>${escapeHtml(orgById[row.orgId] || row.orgId)}</td>
             <td>${tag(row.level, "blue")}</td>
             <td>${tag(row.segment, row.segment === "可剔除" ? "red" : row.segment === "需改善" ? "orange" : "green")}</td>
-            <td>${tag(row.registrationStatus, row.registrationStatus === "注册完成" ? "green" : row.registrationStatus === "已失效" ? "red" : "orange")}</td>
             <td>${gradeCell(row)}</td>
             <td>${row.openRiskCount ? tag(`${row.openRiskCount}条`, "red") : tag("无", "green")}</td>
             <td>${row.remediation ? tag(remediationStatusText[row.remediation.status] || row.remediation.status, row.remediation.status === "overdue" ? "red" : "orange") : tag("无整改", "green")}</td>

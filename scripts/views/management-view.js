@@ -23,7 +23,7 @@
       <section class="section-grid grid-3">
         <div>
           <div class="layout-stack management-side-stack">
-            ${ns.widgets.sourceRegistrationWidget(suppliers)}
+            ${ns.widgets.distributionPanel("供应商级别分布", "新的/注册/推荐/潜在/优秀/合格/淘汰", suppliers, "level")}
             ${ns.widgets.orgDistributionWidget(data, suppliers)}
           </div>
         </div>
@@ -35,7 +35,7 @@
       </section>
 
       <section class="section-grid grid-3">
-        <div>${ns.widgets.distributionPanel("供应商级别分布", "新的/注册/推荐/潜在/优秀/合格/淘汰", suppliers, "level")}</div>
+        <div>${ns.widgets.sourceRegistrationWidget(suppliers)}</div>
         <div class="span-2">${ns.widgets.supplierGrowthFunnelWidget(suppliers)}</div>
       </section>
 
