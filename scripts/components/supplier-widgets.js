@@ -161,10 +161,11 @@
               ? Math.min(totalWidth, Math.max(1, Math.round((item.registered / maxOrgTotal) * 100)))
               : 0;
             const riskOffset = Math.min(100, Math.max(1, Math.round((item.risk / maxOrgTotal) * 100)));
+            const registeredRate = Math.round((item.registered / item.value) * 100);
             return `<div class="org-bullet">
               <div class="org-bullet-head">
                 <strong>${escapeHtml(item.label)}</strong>
-                <span>${item.value} 家</span>
+                <span>共 ${item.value} 家</span>
               </div>
               <div class="org-bullet-track">
                 <i class="org-bullet-total" style="--w:${totalWidth}%"></i>
@@ -174,15 +175,14 @@
                 ${item.risk ? `<b class="org-bullet-risk" style="--x:${riskOffset}%">${item.risk}</b>` : ""}
               </div>
               <div class="org-bullet-meta">
-                <span>注册完成 ${item.registered}/${item.value}</span>
-                <span>风险供应商 ${item.risk}</span>
+                <span>注册完成率 ${registeredRate}%</span>
               </div>
             </div>`;
           })
           .join("")}</div>
         <div class="chart-legend compact-legend">
           <span style="color:#2f7df6"><i class="legend-dot"></i>组织供应商总量</span>
-          <span style="color:#20b26b"><i class="legend-dot"></i>注册完成率</span>
+          <span style="color:#20b26b"><i class="legend-dot"></i>注册完成</span>
           <span style="color:#f05b57"><i class="legend-dot"></i>风险供应商</span>
         </div>
       </div>`
@@ -308,7 +308,7 @@
                 .map((item) => `<div class="category-cert-row">
                   <div class="category-cert-row-head">
                     <strong>${escapeHtml(item.category.name)}</strong>
-                    <span>共 ${item.total} 组</span>
+                    <span>共 ${item.total} 家</span>
                   </div>
                   <div class="category-cert-stack ${item.total ? "" : "is-empty"}">
                     ${item.segments
